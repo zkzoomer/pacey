@@ -1,0 +1,14 @@
+{
+  "id": "pacey",
+  "name": "Pacey",
+  "description": "Pacey-specific behavior for OpenClaw.",
+  "version": "0.1.0",
+  "categories": ["other"],
+  "activation": {
+    "onCapabilities": ["hook"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}

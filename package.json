@@ -1,0 +1,50 @@
+{
+  "name": "@pacey/openclaw-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": ">=26.1.0 <27"
+  },
+  "peerDependencies": {
+    "openclaw": "2026.9.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.4.0",
+    "eslint": "10.10.0",
+    "openclaw": "2026.9.4",
+    "prettier": "3.9.8",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0"
+  },
+  "scripts": {
+    "validate": "yarn format:check && yarn lint && yarn typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "node --import tsx --test src/*/tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "openclaw:onboard": "openclaw onboard",
+    "plugin:install": "openclaw plugins install --link . --force && openclaw plugins enable pacey",
+    "plugin:inspect": "openclaw plugins inspect pacey --runtime --json",
+    "gateway:dev": "openclaw --log-level debug gateway run --verbose --ws-log compact",
+    "gateway:start": "openclaw gateway start",
+    "gateway:stop": "openclaw gateway stop"
+  },
+  "openclaw": {
+    "extensions": [
+      "./src/index.ts"
+    ],
+    "compat": {
+      "pluginApi": "2026.9.4",
+      "minGatewayVersion": "2026.9.4"
+    },
+    "build": {
+      "openclawVersion": "2026.9.4",
+      "pluginSdkVersion": "2026.9.4"
+    }
+  }
+}
