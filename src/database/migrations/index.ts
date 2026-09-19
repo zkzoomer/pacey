@@ -1,8 +1,12 @@
-import { withDatabase } from "../connection.js";
-import { createWeights } from "./001-create-weights.js";
-import type { Migration } from "./types.js";
+import { readFileSync } from "node:fs";
 
-const migrations = [createWeights] satisfies readonly Migration[];
+import { withDatabase } from "../connection.js";
+
+type Migration = Readonly<{ version: number; filename: string }>;
+
+const migrations = [
+  { version: 1, filename: "001-create-weights.sql" },
+] satisfies readonly Migration[];
 
 function validateMigrations(): void {
   migrations.forEach((migration, index) => {
@@ -39,7 +43,11 @@ export function migrateDatabase(databasePath: string): void {
     database.exec("BEGIN IMMEDIATE");
     try {
       for (const migration of pendingMigrations) {
-        migration.up(database);
+        const sql = readFileSync(
+          new URL(migration.filename, import.meta.url),
+          "utf8",
+        );
+        database.exec(sql);
         database.exec(`PRAGMA user_version = ${migration.version}`);
       }
       database.exec("COMMIT");
