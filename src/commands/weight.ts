@@ -6,25 +6,40 @@ import type {
 
 import type { CommandDependencies } from "./types.js";
 
+export const WEIGHT_USAGE = `
+  Usage: /weight <weight> [bodyfat]
+
+  Arguments:
+  • weight:  Your weight in kilograms
+  • bodyfat: Optional body fat percentage
+  `.trim();
+
 const MIN_WEIGHT_KG = 10;
 const MAX_WEIGHT_KG = 500;
-const WEIGHT_PATTERN = /^\d+(?:[.,]\d+)?$/;
-const USAGE = "Usage: /weight <weight> (kilograms)";
+const NUMBER_PATTERN = /^\d+(?:[.,]\d+)?$/;
 
 export type WeightParseResult =
-  { ok: true; weightKg: number } | { ok: false; message: string };
+  | { ok: true; weightKg: number; bodyfat: number | null }
+  | { ok: false; message: string };
 
 function roundKilograms(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
 
 export function parseWeightInput(raw: string | undefined): WeightParseResult {
-  const input = raw?.trim();
-  if (!input || !WEIGHT_PATTERN.test(input)) {
-    return { ok: false, message: USAGE };
+  const parts = raw?.trim().split(/\s+/) ?? [];
+  if (
+    parts.length < 1 ||
+    parts.length > 2 ||
+    parts.some((part) => !NUMBER_PATTERN.test(part))
+  ) {
+    return { ok: false, message: WEIGHT_USAGE };
   }
 
-  const weightKg = roundKilograms(Number.parseFloat(input.replace(",", ".")));
+  const [weightInput, bodyfatInput] = parts;
+  const weightKg = roundKilograms(
+    Number.parseFloat(weightInput.replace(",", ".")),
+  );
   if (
     !Number.isFinite(weightKg) ||
     weightKg < MIN_WEIGHT_KG ||
@@ -36,7 +51,18 @@ export function parseWeightInput(raw: string | undefined): WeightParseResult {
     };
   }
 
-  return { ok: true, weightKg };
+  const bodyfat =
+    bodyfatInput === undefined
+      ? null
+      : Number.parseFloat(bodyfatInput.replace(",", "."));
+  if (
+    bodyfat !== null &&
+    (!Number.isFinite(bodyfat) || bodyfat <= 0 || bodyfat > 100)
+  ) {
+    return { ok: false, message: "Body fat must be between 0 and 100%." };
+  }
+
+  return { ok: true, weightKg, bodyfat };
 }
 
 export function calendarDayFromTimestamp(
@@ -89,11 +115,12 @@ export function createWeightHandler(dependencies: CommandDependencies) {
       dependencies.database.weights.record({
         accountId,
         weightKg: parsed.weightKg,
+        bodyfat: parsed.bodyfat,
         measuredOn,
       });
 
       return {
-        text: `Recorded ${parsed.weightKg} kg for ${measuredOn}.`,
+        text: `Recorded ${parsed.weightKg} kg${parsed.bodyfat === null ? "" : `, ${parsed.bodyfat}% body fat`} for ${measuredOn}.`,
       };
     } catch (error) {
       dependencies.logger.error(`Failed to record weight: ${String(error)}`);

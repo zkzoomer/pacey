@@ -14,16 +14,21 @@ test("records only the fields in a weight measurement", () => {
   try {
     const paceyDatabase = createDatabase(directory);
     paceyDatabase.initialize();
-    paceyDatabase.weights.record({
+    const record1 = {
       accountId: "telegram-user-1",
       weightKg: 82.1,
+      bodyfat: 23.1,
       measuredOn: "2026-09-18",
-    });
-    paceyDatabase.weights.record({
+    };
+    const record2 = {
       accountId: "telegram-user-1",
       weightKg: 82.3,
+      bodyfat: 26.1,
       measuredOn: "2026-09-18",
-    });
+    };
+
+    paceyDatabase.weights.record(record1);
+    paceyDatabase.weights.record(record2);
 
     const database = new DatabaseSync(databasePath, { readOnly: true });
     try {
@@ -31,30 +36,24 @@ test("records only the fields in a weight measurement", () => {
         .prepare("PRAGMA table_info(weights)")
         .all()
         .map((column) => (column as { name: string }).name);
-      assert.deepEqual(columns, ["account_id", "weight_kg", "measured_on"]);
+      assert.deepEqual(columns, [
+        "account_id",
+        "weight_kg",
+        "bodyfat",
+        "measured_on",
+      ]);
 
       const rows = database
         .prepare(
           `
-          SELECT account_id, weight_kg, measured_on
+          SELECT account_id, weight_kg, bodyfat, measured_on
           FROM weights
           ORDER BY rowid
         `,
         )
         .all()
-        .map((row) => ({ ...row }));
-      assert.deepEqual(rows, [
-        {
-          account_id: "telegram-user-1",
-          weight_kg: 82.1,
-          measured_on: "2026-09-18",
-        },
-        {
-          account_id: "telegram-user-1",
-          weight_kg: 82.3,
-          measured_on: "2026-09-18",
-        },
-      ]);
+        .map(toMeasurement);
+      assert.deepEqual(rows, [record1, record2]);
     } finally {
       database.close();
     }
@@ -62,3 +61,67 @@ test("records only the fields in a weight measurement", () => {
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("records NULL bodyfat if not provided", () => {
+  const directory = mkdtempSync(join(tmpdir(), "pacey-weights-test-"));
+  const databasePath = join(directory, "plugins", "pacey", "pacey.sqlite");
+
+  try {
+    const paceyDatabase = createDatabase(directory);
+    paceyDatabase.initialize();
+    const record1 = {
+      accountId: "telegram-user-1",
+      weightKg: 82.1,
+      bodyfat: null,
+      measuredOn: "2026-09-18",
+    };
+    const record2 = {
+      accountId: "telegram-user-1",
+      weightKg: 82.3,
+      bodyfat: null,
+      measuredOn: "2026-09-18",
+    };
+
+    paceyDatabase.weights.record(record1);
+    paceyDatabase.weights.record(record2);
+
+    const database = new DatabaseSync(databasePath, { readOnly: true });
+    try {
+      const columns = database
+        .prepare("PRAGMA table_info(weights)")
+        .all()
+        .map((column) => (column as { name: string }).name);
+      assert.deepEqual(columns, [
+        "account_id",
+        "weight_kg",
+        "bodyfat",
+        "measured_on",
+      ]);
+
+      const rows = database
+        .prepare(
+          `
+          SELECT account_id, weight_kg, bodyfat, measured_on
+          FROM weights
+          ORDER BY rowid
+        `,
+        )
+        .all()
+        .map(toMeasurement);
+      assert.deepEqual(rows, [record1, record2]);
+    } finally {
+      database.close();
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+function toMeasurement(row: Record<string, unknown>) {
+  return {
+    accountId: row.account_id,
+    weightKg: row.weight_kg,
+    bodyfat: row.bodyfat,
+    measuredOn: row.measured_on,
+  };
+}

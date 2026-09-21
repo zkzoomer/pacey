@@ -4,6 +4,7 @@ import test from "node:test";
 import type { PluginCommandContext } from "openclaw/plugin-sdk/plugin-entry";
 
 import { createCommandRegistry } from "../index.js";
+import { WEIGHT_USAGE } from "../weight.js";
 
 test("passes a command's Telegram timestamp to its handler", async () => {
   const registry = createCommandRegistry({
@@ -36,7 +37,7 @@ test("passes a command's Telegram timestamp to its handler", async () => {
     config: {},
   } as PluginCommandContext;
   const firstResult = await weightCommand.handler(context);
-  assert.equal(firstResult.text, "Usage: /weight <weight> (kilograms)");
+  assert.equal(firstResult.text, WEIGHT_USAGE);
 
   const secondResult = await weightCommand.handler(context);
   assert.equal(
