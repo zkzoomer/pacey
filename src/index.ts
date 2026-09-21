@@ -1,7 +1,9 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 
-import { createCommandRegistry } from "./commands/index.js";
+import { createWeightCommand } from "./commands/weight.js";
 import { createDatabase } from "./database/index.js";
+
+const commandFactories = [createWeightCommand];
 
 export default definePluginEntry({
   id: "pacey",
@@ -18,14 +20,8 @@ export default definePluginEntry({
       start: database.initialize,
     });
 
-    const commandRegistry = createCommandRegistry({
-      database,
-      logger: api.logger,
-    });
-    api.on("message_received", commandRegistry.handleMessageReceived);
-
-    for (const command of commandRegistry.commands) {
-      api.registerCommand(command);
+    for (const createCommand of commandFactories) {
+      api.registerCommand(createCommand({ database, logger: api.logger }));
     }
   },
 });
