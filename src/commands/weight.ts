@@ -87,8 +87,11 @@ export function calendarDayFromTimestamp(
 
 export function createWeightHandler(dependencies: CommandDependencies) {
   return (context: PluginCommandContext): PluginCommandResult => {
+    dependencies.logger.debug?.("[weight] command received");
+
     const accountId = context.senderId ?? context.from;
     if (!accountId) {
+      dependencies.logger.debug?.("[weight] rejected: account unavailable");
       return {
         text: "I couldn't identify your Telegram account, so nothing was recorded.",
       };
@@ -100,13 +103,23 @@ export function createWeightHandler(dependencies: CommandDependencies) {
         "weight",
       );
       if (messageTimestamp === undefined) {
+        dependencies.logger.debug?.(
+          "[weight] rejected: Telegram timestamp unavailable",
+        );
         return {
           text: "I couldn't read this Telegram message's timestamp, so nothing was recorded.",
         };
       }
 
       const parsed = parseWeightInput(context.args);
-      if (!parsed.ok) return { text: parsed.message };
+      if (!parsed.ok) {
+        dependencies.logger.debug?.("[weight] rejected: invalid arguments");
+        return { text: parsed.message };
+      }
+
+      dependencies.logger.debug?.(
+        `[weight] arguments parsed (bodyfatProvided=${parsed.bodyfat !== null})`,
+      );
 
       const measuredOn = calendarDayFromTimestamp(
         messageTimestamp,
@@ -118,6 +131,9 @@ export function createWeightHandler(dependencies: CommandDependencies) {
         bodyfat: parsed.bodyfat,
         measuredOn,
       });
+      dependencies.logger.debug?.(
+        `[weight] measurement persisted (measuredOn=${measuredOn})`,
+      );
 
       return {
         text: `Recorded ${parsed.weightKg} kg${parsed.bodyfat === null ? "" : `, ${parsed.bodyfat}% body fat`} for ${measuredOn}.`,

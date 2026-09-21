@@ -4,7 +4,7 @@ import type { PaceyDatabase } from "../database/index.js";
 
 export type CommandDependencies = {
   database: PaceyDatabase;
-  logger: Pick<PluginLogger, "error">;
+  logger: Pick<PluginLogger, "debug" | "error">;
   takeMessageTimestamp: (
     sessionKey: string | undefined,
     commandName: string,
