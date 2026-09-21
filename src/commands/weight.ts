@@ -10,7 +10,7 @@ export const WEIGHT_USAGE = `
   Usage: /weight <weight> [bodyfat]
 
   Arguments:
-  • weight:  Your weight in kilograms
+  • weight: Your weight in kilograms
   • bodyfat: Optional body fat percentage
   `.trim();
 
