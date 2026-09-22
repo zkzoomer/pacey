@@ -123,7 +123,7 @@ export function createWeightCommand(
 ): OpenClawPluginCommandDefinition {
   return {
     name: "weight",
-    description: "Record body weight in kilograms without calling an LLM",
+    description: "Record body weight and optional body fat percentage",
     channels: ["telegram"],
     acceptsArgs: true,
     requireAuth: true,
