@@ -4,6 +4,7 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 workspace="$repo_dir/workspace"
+config_patch="$repo_dir/config/openclaw.patch.json5"
 profile_args=()
 state_dir="$HOME/.openclaw"
 
@@ -27,6 +28,11 @@ cd "$repo_dir"
 
 command -v node >/dev/null || { echo "Node.js is required." >&2; exit 1; }
 command -v yarn >/dev/null || { echo "Yarn is required." >&2; exit 1; }
+
+if [[ ! -f "$config_patch" ]]; then
+  echo "Repository config patch not found: $config_patch" >&2
+  exit 1
+fi
 
 for workspace_file in AGENTS.md SOUL.md IDENTITY.md; do
   if [[ ! -f "$workspace/$workspace_file" ]]; then
@@ -97,16 +103,8 @@ if openclaw config get agents.defaults.workspace >/dev/null 2>&1; then
   openclaw config unset agents.defaults.workspace
 fi
 
-openclaw config set agents.defaults.skipBootstrap true --strict-json
-
-openclaw config set channels.telegram.enabled true --strict-json
-
-openclaw config set \
-  plugins.entries.pacey.hooks.allowConversationAccess \
-  true \
-  --strict-json
-
-openclaw config set agents.defaults.model.primary openai/gpt-5.6-terra
+echo "Applying repository configuration..."
+openclaw config patch --file "$config_patch"
 
 echo "Linking the Pacey plugin..."
 openclaw plugins install --link "$repo_dir" --force

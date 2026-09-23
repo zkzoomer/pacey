@@ -1,0 +1,46 @@
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "openai/gpt-5.6-terra",
+      },
+      skipBootstrap: true,
+    },
+  },
+
+  commands: {
+    text: false,
+    nativeSkills: false,
+    bash: false,
+    config: false,
+    mcp: false,
+    plugins: false,
+    debug: false,
+    restart: false,
+  },
+
+  channels: {
+    telegram: {
+      enabled: true,
+      commands: {
+        native: false,
+      },
+      customCommands: [
+        {
+          command: "weight",
+          description: "Log weight in kilograms",
+        },
+      ],
+    },
+  },
+
+  plugins: {
+    entries: {
+      pacey: {
+        hooks: {
+          allowConversationAccess: true,
+        },
+      },
+    },
+  },
+}

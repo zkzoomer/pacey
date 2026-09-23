@@ -14,5 +14,5 @@ if [[ "$#" -gt 1 ]]; then
   exit 1
 fi
 
-# Deployment is idempotent: it keeps state and applies the checked-out code.
+# Deployment is idempotent: it keeps state and applies the checked-out code and config.
 exec "$repo_dir/scripts/deploy.sh" "$@"
