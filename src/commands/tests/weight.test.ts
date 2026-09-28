@@ -70,7 +70,6 @@ test("records a weight using the current server day", async () => {
   }> = [];
   const command = createWeightCommand({
     database: {
-      initialize: () => undefined,
       weights: { record: (measurement) => records.push(measurement) },
     },
     logger: { error: () => undefined },

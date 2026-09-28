@@ -1,10 +1,15 @@
 import { join } from "node:path";
 
 import { migrateDatabase } from "./migrations/index.js";
+import {
+  createAthleteProfileQueries,
+  type AthleteProfileQueries,
+} from "./queries/athlete-profiles.js";
 import { createWeightQueries, type WeightQueries } from "./queries/weights.js";
 
 export type PaceyDatabase = {
   initialize: () => void;
+  athleteProfiles: AthleteProfileQueries;
   weights: WeightQueries;
 };
 
@@ -13,6 +18,7 @@ export function createDatabase(stateDirectory: string): PaceyDatabase {
 
   return {
     initialize: () => migrateDatabase(databasePath),
+    athleteProfiles: createAthleteProfileQueries(databasePath),
     weights: createWeightQueries(databasePath),
   };
 }

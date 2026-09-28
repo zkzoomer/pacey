@@ -8,6 +8,20 @@
     },
   },
 
+  session: {
+    dmScope: "per-account-channel-peer",
+  },
+
+  tools: {
+    profile: "messaging",
+    sessions: {
+      visibility: "self",
+    },
+    agentToAgent: {
+      enabled: false,
+    },
+  },
+
   commands: {
     text: false,
     nativeSkills: false,
@@ -22,10 +36,17 @@
   channels: {
     telegram: {
       enabled: true,
+      streaming: {
+        mode: "off",
+      },
       commands: {
         native: false,
       },
       customCommands: [
+        {
+          command: "goals",
+          description: "Create, view, or update your athlete profile",
+        },
         {
           command: "weight",
           description: "Log weight in kilograms",

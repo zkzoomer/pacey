@@ -5,7 +5,17 @@
   "version": "0.1.0",
   "categories": ["other"],
   "activation": {
-    "onCapabilities": ["hook"]
+    "onStartup": true,
+    "onCapabilities": ["hook", "tool"]
+  },
+  "contracts": {
+    "tools": ["pacey_save_athlete_profile"]
+  },
+  "toolMetadata": {
+    "pacey_save_athlete_profile": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": true
+    }
   },
   "configSchema": {
     "type": "object",

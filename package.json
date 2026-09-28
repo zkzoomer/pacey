@@ -7,6 +7,9 @@
   "engines": {
     "node": ">=26.1.0 <27"
   },
+  "dependencies": {
+    "typebox": "1.3.18"
+  },
   "peerDependencies": {
     "openclaw": "2026.9.4"
   },
@@ -28,7 +31,7 @@
     "test": "node --import tsx --test src/*/tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "openclaw:onboard": "openclaw onboard",
-    "plugin:install": "openclaw plugins install --link . --force && openclaw plugins enable pacey",
+    "plugin:install": "openclaw plugins install --link . --force && openclaw plugins enable pacey --accept-capabilities",
     "plugin:inspect": "openclaw plugins inspect pacey --runtime --json",
     "gateway:dev": "openclaw --log-level debug gateway run --verbose --ws-log compact",
     "gateway:start": "openclaw gateway start",
