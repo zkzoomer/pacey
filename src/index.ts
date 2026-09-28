@@ -1,5 +1,9 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 
+import {
+  athleteBenchmarksContext,
+  athleteBenchmarksUnavailableContext,
+} from "./benchmarks/context.js";
 import { createWeightCommand } from "./commands/weight.js";
 import { createDatabase } from "./database/index.js";
 import {
@@ -32,6 +36,7 @@ export default definePluginEntry({
       const channel = context.channel ?? context.messageProvider;
       if (channel !== "telegram" || !context.senderId) return;
 
+      let profileContext: string;
       try {
         const profile = database.athleteProfiles.findByAccountId(
           context.senderId,
@@ -39,13 +44,33 @@ export default definePluginEntry({
         api.logger.debug?.(
           `[athlete-profile] context loaded (status=${profile === null ? "missing" : "present"})`,
         );
-        return { prependContext: athleteProfileContext(profile) };
+        profileContext = athleteProfileContext(profile);
       } catch (error) {
         api.logger.error(
           `Failed to load athlete profile context: ${String(error)}`,
         );
-        return { prependContext: athleteProfileUnavailableContext() };
+        profileContext = athleteProfileUnavailableContext();
       }
+
+      let benchmarksContext: string;
+      try {
+        const benchmarks = database.athleteBenchmarks.findByAccountId(
+          context.senderId,
+        );
+        api.logger.debug?.(
+          `[athlete-benchmarks] context loaded (status=${benchmarks === null ? "missing" : "present"})`,
+        );
+        benchmarksContext = athleteBenchmarksContext(benchmarks);
+      } catch (error) {
+        api.logger.error(
+          `Failed to load athlete benchmark context: ${String(error)}`,
+        );
+        benchmarksContext = athleteBenchmarksUnavailableContext();
+      }
+
+      return {
+        prependContext: `${profileContext}\n\n${benchmarksContext}`,
+      };
     });
 
     api.registerTool(
