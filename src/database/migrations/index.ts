@@ -7,6 +7,7 @@ type Migration = Readonly<{ version: number; filename: string }>;
 const migrations = [
   { version: 1, filename: "001-create-weights.sql" },
   { version: 2, filename: "002-create-athlete-profiles.sql" },
+  { version: 3, filename: "003-create-athlete-benchmarks.sql" },
 ] satisfies readonly Migration[];
 
 function validateMigrations(): void {

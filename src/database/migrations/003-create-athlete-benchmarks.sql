@@ -1,0 +1,6 @@
+CREATE TABLE athlete_benchmarks (
+  account_id TEXT PRIMARY KEY,
+  benchmarks_markdown TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+) STRICT;

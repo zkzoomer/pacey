@@ -25,8 +25,7 @@ test("initializes a fresh database at the latest version", () => {
       const version = database.prepare("PRAGMA user_version").get() as {
         user_version: number;
       };
-      assert.equal(LATEST_DATABASE_VERSION, 2);
-      assert.equal(version.user_version, 2);
+      assert.equal(LATEST_DATABASE_VERSION, version.user_version);
 
       const tables = database
         .prepare(
@@ -34,7 +33,11 @@ test("initializes a fresh database at the latest version", () => {
         )
         .all()
         .map((row) => (row as { name: string }).name);
-      assert.deepEqual(tables, ["athlete_profiles", "weights"]);
+      assert.deepEqual(tables, [
+        "athlete_benchmarks",
+        "athlete_profiles",
+        "weights",
+      ]);
 
       const athleteProfileColumns = database
         .prepare("PRAGMA table_info(athlete_profiles)")
@@ -96,7 +99,7 @@ test("upgrades a version 1 database without losing weight data", () => {
         .prepare("SELECT COUNT(*) AS count FROM weights")
         .get() as { count: number };
 
-      assert.equal(version.user_version, 2);
+      assert.equal(version.user_version, LATEST_DATABASE_VERSION);
       assert.equal(weights.count, 1);
       assert.doesNotThrow(() =>
         migratedDatabase.prepare("SELECT * FROM athlete_profiles").all(),
@@ -117,14 +120,14 @@ test("rejects a database created by a newer version of Pacey", () => {
   try {
     const database = new DatabaseSync(path);
     try {
-      database.exec("PRAGMA user_version = 3");
+      database.exec(`PRAGMA user_version = ${LATEST_DATABASE_VERSION + 1}`);
     } finally {
       database.close();
     }
 
     assert.throws(
       () => createDatabase(directory).initialize(),
-      /version 3 is newer than supported version 2/,
+      `/version ${LATEST_DATABASE_VERSION + 1} is newer than supported version ${LATEST_DATABASE_VERSION}/`,
     );
   } finally {
     rmSync(directory, { recursive: true, force: true });
