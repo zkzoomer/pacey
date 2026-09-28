@@ -108,7 +108,7 @@ openclaw config patch --file "$config_patch"
 
 echo "Linking the Pacey plugin..."
 openclaw plugins install --link "$repo_dir" --force
-openclaw plugins enable pacey
+openclaw plugins enable pacey --accept-capabilities
 
 echo "Deployment complete. Start Pacey with:"
 echo "  ./scripts/start.sh${profile_args[*]:+ ${profile_args[*]}}"
