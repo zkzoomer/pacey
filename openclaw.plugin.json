@@ -9,10 +9,14 @@
     "onCapabilities": ["hook", "tool"]
   },
   "contracts": {
-    "tools": ["pacey_save_athlete_profile"]
+    "tools": ["pacey_save_athlete_profile", "pacey_save_athlete_benchmarks"]
   },
   "toolMetadata": {
     "pacey_save_athlete_profile": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": true
+    },
+    "pacey_save_athlete_benchmarks": {
       "profiles": ["messaging", "full"],
       "sideEffecting": true
     }

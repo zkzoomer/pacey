@@ -4,6 +4,10 @@ import {
   athleteBenchmarksContext,
   athleteBenchmarksUnavailableContext,
 } from "./benchmarks/context.js";
+import {
+  createAthleteBenchmarksTool,
+  SAVE_ATHLETE_BENCHMARKS_TOOL,
+} from "./benchmarks/tool.js";
 import { createWeightCommand } from "./commands/weight.js";
 import { createDatabase } from "./database/index.js";
 import {
@@ -76,6 +80,10 @@ export default definePluginEntry({
     api.registerTool(
       createAthleteProfileTool({ database, logger: api.logger }),
       { name: SAVE_ATHLETE_PROFILE_TOOL },
+    );
+    api.registerTool(
+      createAthleteBenchmarksTool({ database, logger: api.logger }),
+      { name: SAVE_ATHLETE_BENCHMARKS_TOOL },
     );
   },
 });

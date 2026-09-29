@@ -65,6 +65,10 @@ When enough information has been collected:
    Markdown document.
 4. Confirm the save only after the tool succeeds.
 
+After a successful initial save, immediately continue with the
+athlete-assessment skill when the injected benchmark context is missing. The
+user should not need to invoke another command to continue onboarding.
+
 ## Existing profile and `/goals`
 
 When `/goals` is invoked and a profile exists:
