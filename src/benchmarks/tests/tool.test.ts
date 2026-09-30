@@ -21,12 +21,20 @@ test("validates canonical athlete benchmarks", () => {
     /at least one sport section/,
   );
   assert.match(
-    validationError(`${validBenchmarks}\n\n## Running\n\n- Duplicate`),
+    validationError(`${validBenchmarks}\n\n## Swimming\n\n- Duplicate`),
     /unique name/,
   );
   assert.match(
-    validationError("# Athlete Benchmarks\n\n## Running"),
-    /Running.*cannot be empty/,
+    validationError("# Athlete Benchmarks\n\n## Swimming"),
+    /Swimming.*cannot be empty/,
+  );
+  assert.match(
+    validationError("# Athlete Benchmarks\n\n## Running\n\n- 5 km: 24:30"),
+    /Running.*not supported.*Swimming/,
+  );
+  assert.match(
+    validationError("# Athlete Benchmarks\n\n## swim\n\n- 1,000 m: 21:00"),
+    /canonical heading.*Swimming.*swim/,
   );
 });
 
@@ -58,7 +66,7 @@ test("replaces only the trusted requester's athlete benchmarks", async () => {
     });
     assert.deepEqual(result.details, { saved: true });
 
-    const replacement = validBenchmarks.replace("24:30", "23:45");
+    const replacement = validBenchmarks.replace("21:00", "20:30");
     await tool.execute("tool-call-2", { benchmarksMarkdown: replacement });
 
     assert.equal(
@@ -82,10 +90,6 @@ function validationError(benchmarksMarkdown: string): string {
 }
 
 const validBenchmarks = `# Athlete Benchmarks
-
-## Running
-
-- Recent 5 km: 24:30
 
 ## Swimming
 

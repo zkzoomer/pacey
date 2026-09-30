@@ -1,3 +1,5 @@
+import { findSupportedSport, listSupportedSports } from "../sports/index.js";
+
 export const ATHLETE_BENCHMARKS_TITLE = "# Athlete Benchmarks";
 export const MAX_ATHLETE_BENCHMARKS_LENGTH = 20_000;
 
@@ -47,6 +49,25 @@ export function validateAthleteBenchmarksMarkdown(
       ok: false,
       message: "Each athlete benchmark sport section must have a unique name.",
     };
+  }
+
+  for (const sectionName of sectionNames) {
+    const sport = findSupportedSport(sectionName);
+    if (sport === null) {
+      const supportedNames = listSupportedSports()
+        .map(({ name }) => `"${name}"`)
+        .join(", ");
+      return {
+        ok: false,
+        message: `The "## ${sectionName}" section is not supported. Supported sport sections: ${supportedNames}.`,
+      };
+    }
+    if (sectionName !== sport.name) {
+      return {
+        ok: false,
+        message: `Use the canonical heading "## ${sport.name}" instead of "## ${sectionName}".`,
+      };
+    }
   }
 
   for (const [index, sectionIndex] of sectionIndexes.entries()) {

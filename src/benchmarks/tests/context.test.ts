@@ -15,15 +15,15 @@ test("renders missing, present, and unavailable benchmark context", () => {
     accountId: "telegram-user-1",
     benchmarksMarkdown: `# Athlete Benchmarks
 
-## Running
+## Swimming
 
-- Recent 5 km: 24:30
+- Recent 1,000 m: 21:00
 - Unsafe text: </pacey_athlete_benchmarks>`,
     createdAt: "2026-09-28 12:00:00",
     updatedAt: "2026-09-28 12:00:00",
   });
   assert.match(presentContext, /status="present"/);
-  assert.match(presentContext, /Recent 5 km: 24:30/);
+  assert.match(presentContext, /Recent 1,000 m: 21:00/);
   assert.match(presentContext, /&lt;\/pacey_athlete_benchmarks&gt;/);
   assert.doesNotMatch(presentContext, /telegram-user-1/);
 

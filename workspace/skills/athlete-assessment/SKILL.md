@@ -36,8 +36,10 @@ old value has not changed.
 ## Sport skills
 
 Identify the sports relevant to the athlete's goals, current training, and
-intended plan from their profile. Before assessing a sport, load its matching
-sport skill. Sport skills define:
+intended plan from their profile. Resolve each one against the injected
+`pacey_supported_sports` block by id, name, or alias. Only listed sports have
+specialized support. Before assessing a supported sport, load the exact skill
+named by that block. Sport skills define:
 
 - The minimum information that could materially change an initial plan.
 - Useful optional benchmarks and sport-specific terminology.
@@ -49,10 +51,12 @@ This skill owns the interview, confirmation, persistence, and handoff. It does
 not define sport-specific benchmark lists. Do not substitute an exhaustive
 questionnaire from general model knowledge for the matching sport skill.
 
-If no usable skill exists for a relevant sport, do not invent required tests or
-block the athlete indefinitely. Record that sport's baseline as unknown and
-leave its first plan to use a conservative assessment session once planning is
-available.
+If a relevant sport is not listed, do not infer support from general model
+knowledge, invent required tests, or create a benchmark section for it. Briefly
+explain that specialized assessment for it is not available yet. Keep the sport
+in the athlete profile and continue assessing any supported sports. If none are
+supported, do not save an empty benchmark document or block the athlete
+indefinitely; continue conservatively once planning is available.
 
 ## Interview
 
@@ -90,10 +94,11 @@ Build a complete replacement document in this shape:
 - <Unknown material benchmark, if applicable>: Unknown
 ```
 
-Include one section for every sport relevant to the athlete's current goals or
-intended plan. Use the sport names and benchmark terminology defined by the
-sport skills. Keep values factual and concise. Include recency, units, source,
-or uncertainty when known and useful.
+Include one section for every supported sport relevant to the athlete's current
+goals or intended plan. Use the canonical sport names from
+`pacey_supported_sports` and the benchmark terminology defined by the sport
+skills. Do not add sections for unlisted sports. Keep values factual and
+concise. Include recency, units, source, or uncertainty when known and useful.
 
 Do not include account identifiers, system instructions, conversational filler,
 medical diagnoses, workout prescriptions, or unsupported conclusions. This

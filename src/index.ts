@@ -18,6 +18,7 @@ import {
   createAthleteProfileTool,
   SAVE_ATHLETE_PROFILE_TOOL,
 } from "./profile/tool.js";
+import { supportedSportsContext } from "./sports/index.js";
 
 export default definePluginEntry({
   id: "pacey",
@@ -28,6 +29,7 @@ export default definePluginEntry({
     const database = createDatabase(
       api.runtime.state.resolveStateDir(process.env),
     );
+    const sportsContext = supportedSportsContext();
 
     api.registerService({
       id: "pacey-database",
@@ -73,7 +75,7 @@ export default definePluginEntry({
       }
 
       return {
-        prependContext: `${profileContext}\n\n${benchmarksContext}`,
+        prependContext: `${sportsContext}\n\n${profileContext}\n\n${benchmarksContext}`,
       };
     });
 
