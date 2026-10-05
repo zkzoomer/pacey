@@ -9,6 +9,10 @@ import {
   SAVE_ATHLETE_BENCHMARKS_TOOL,
 } from "./benchmarks/tool.js";
 import { createWeightCommand } from "./commands/weight.js";
+import {
+  createWorkoutTodayCommand,
+  createWorkoutWeekCommand,
+} from "./commands/workouts.js";
 import { createDatabase } from "./database/index.js";
 import {
   athleteProfileContext,
@@ -37,6 +41,12 @@ export default definePluginEntry({
     });
 
     api.registerCommand(createWeightCommand({ database, logger: api.logger }));
+    api.registerCommand(
+      createWorkoutTodayCommand({ database, logger: api.logger }),
+    );
+    api.registerCommand(
+      createWorkoutWeekCommand({ database, logger: api.logger }),
+    );
 
     api.on("before_prompt_build", (_event, context) => {
       const channel = context.channel ?? context.messageProvider;

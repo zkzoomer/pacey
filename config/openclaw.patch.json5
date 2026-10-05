@@ -51,6 +51,14 @@
           command: "weight",
           description: "Log weight in kilograms",
         },
+        {
+          command: "workout_today",
+          description: "Show today's planned workouts",
+        },
+        {
+          command: "workout_week",
+          description: "Show this week's planned workouts",
+        },
       ],
     },
   },
