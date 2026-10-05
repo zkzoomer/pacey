@@ -13,7 +13,9 @@ export function withDatabase<T>(
   const database = new DatabaseSync(databasePath);
   try {
     chmodSync(databasePath, 0o600);
-    database.exec("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
+    database.exec(
+      "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;",
+    );
     return operation(database);
   } finally {
     database.close();

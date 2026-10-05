@@ -8,6 +8,10 @@ const migrations = [
   { version: 1, filename: "001-create-weights.sql" },
   { version: 2, filename: "002-create-athlete-profiles.sql" },
   { version: 3, filename: "003-create-athlete-benchmarks.sql" },
+  {
+    version: 4,
+    filename: "004-create-training-weeks-and-planned-workouts.sql",
+  },
 ] satisfies readonly Migration[];
 
 function validateMigrations(): void {

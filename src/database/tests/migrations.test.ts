@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 
+import { withDatabase } from "../connection.js";
 import { createDatabase } from "../index.js";
 import { LATEST_DATABASE_VERSION } from "../migrations/index.js";
 
@@ -36,6 +37,8 @@ test("initializes a fresh database at the latest version", () => {
       assert.deepEqual(tables, [
         "athlete_benchmarks",
         "athlete_profiles",
+        "planned_workouts",
+        "training_weeks",
         "weights",
       ]);
 
@@ -47,6 +50,40 @@ test("initializes a fresh database at the latest version", () => {
         "account_id",
         "profile_markdown",
         "timezone",
+        "created_at",
+        "updated_at",
+      ]);
+
+      const trainingWeekColumns = database
+        .prepare("PRAGMA table_info(training_weeks)")
+        .all()
+        .map((column) => (column as { name: string }).name);
+      assert.deepEqual(trainingWeekColumns, [
+        "id",
+        "account_id",
+        "week_start",
+        "timezone",
+        "revision",
+        "status",
+        "created_at",
+        "updated_at",
+      ]);
+
+      const plannedWorkoutColumns = database
+        .prepare("PRAGMA table_info(planned_workouts)")
+        .all()
+        .map((column) => (column as { name: string }).name);
+      assert.deepEqual(plannedWorkoutColumns, [
+        "id",
+        "training_week_id",
+        "account_id",
+        "sport_id",
+        "scheduled_at_utc",
+        "timezone",
+        "estimated_duration_minutes",
+        "target_rpe",
+        "instructions_markdown",
+        "status",
         "created_at",
         "updated_at",
       ]);
@@ -104,9 +141,105 @@ test("upgrades a version 1 database without losing weight data", () => {
       assert.doesNotThrow(() =>
         migratedDatabase.prepare("SELECT * FROM athlete_profiles").all(),
       );
+      assert.doesNotThrow(() =>
+        migratedDatabase.prepare("SELECT * FROM training_weeks").all(),
+      );
+      assert.doesNotThrow(() =>
+        migratedDatabase.prepare("SELECT * FROM planned_workouts").all(),
+      );
     } finally {
       migratedDatabase.close();
     }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("enforces planned workout ownership and field constraints", () => {
+  const directory = mkdtempSync(join(tmpdir(), "pacey-migration-test-"));
+  const path = databasePath(directory);
+
+  try {
+    createDatabase(directory).initialize();
+
+    withDatabase(path, (database) => {
+      database
+        .prepare(
+          `
+            INSERT INTO training_weeks (
+              id,
+              account_id,
+              week_start,
+              timezone,
+              revision,
+              status
+            ) VALUES (?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          "week-1",
+          "telegram-user-1",
+          "2026-10-05",
+          "Europe/Malta",
+          1,
+          "published",
+        );
+
+      const insertWorkout = database.prepare(
+        `
+          INSERT INTO planned_workouts (
+            id,
+            training_week_id,
+            account_id,
+            sport_id,
+            scheduled_at_utc,
+            timezone,
+            estimated_duration_minutes,
+            target_rpe,
+            instructions_markdown
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      );
+
+      insertWorkout.run(
+        "workout-1",
+        "week-1",
+        "telegram-user-1",
+        "swimming",
+        "2026-10-05T06:00:00.000Z",
+        "Europe/Malta",
+        60,
+        5,
+        "# Endurance swim",
+      );
+
+      assert.throws(() =>
+        insertWorkout.run(
+          "workout-2",
+          "week-1",
+          "telegram-user-2",
+          "swimming",
+          "2026-10-06T06:00:00.000Z",
+          "Europe/Malta",
+          45,
+          4,
+          "# Technique swim",
+        ),
+      );
+      assert.throws(() =>
+        insertWorkout.run(
+          "workout-3",
+          "week-1",
+          "telegram-user-1",
+          "swimming",
+          "2026-10-07T06:00:00.000Z",
+          "Europe/Malta",
+          45,
+          11,
+          "# Sprint swim",
+        ),
+      );
+    });
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
