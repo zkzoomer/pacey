@@ -9,7 +9,11 @@
     "onCapabilities": ["hook", "tool"]
   },
   "contracts": {
-    "tools": ["pacey_save_athlete_profile", "pacey_save_athlete_benchmarks"]
+    "tools": [
+      "pacey_save_athlete_profile",
+      "pacey_save_athlete_benchmarks",
+      "pacey_get_schedule"
+    ]
   },
   "toolMetadata": {
     "pacey_save_athlete_profile": {
@@ -19,6 +23,10 @@
     "pacey_save_athlete_benchmarks": {
       "profiles": ["messaging", "full"],
       "sideEffecting": true
+    },
+    "pacey_get_schedule": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": false
     }
   },
   "configSchema": {

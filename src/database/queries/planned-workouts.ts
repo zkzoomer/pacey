@@ -19,6 +19,23 @@ export type PlannedWorkoutQueries = {
     startUtc: string,
     endUtc: string,
   ) => PlannedWorkout[];
+  getTrainingState: (
+    accountId: string,
+    window: TrainingStateWindow,
+  ) => TrainingState;
+};
+
+export type TrainingStateWindow = {
+  currentWeekStart: string;
+  nextWeekStart: string;
+  recentStartUtc: string;
+  nowUtc: string;
+};
+
+export type TrainingState = {
+  currentWeek: "present" | "missing";
+  nextWeek: "present" | "missing";
+  unreportedRecentWorkouts: number;
 };
 
 type PlannedWorkoutRow = {
@@ -32,6 +49,12 @@ type PlannedWorkoutRow = {
   target_rpe: number | null;
   instructions_markdown: string;
   status: string;
+};
+
+type TrainingStateRow = {
+  current_week_present: number;
+  next_week_present: number;
+  unreported_recent_workouts: number;
 };
 
 export function createPlannedWorkoutQueries(
@@ -68,6 +91,57 @@ export function createPlannedWorkoutQueries(
           .all(accountId, startUtc, endUtc)
           .map((row) => toPlannedWorkout(row as PlannedWorkoutRow)),
       );
+    },
+    getTrainingState(accountId, window) {
+      return withDatabase(databasePath, (database) => {
+        const row = database
+          .prepare(
+            `
+              SELECT
+                EXISTS (
+                  SELECT 1
+                  FROM training_weeks
+                  WHERE account_id = ?
+                    AND week_start = ?
+                    AND status = 'published'
+                ) AS current_week_present,
+                EXISTS (
+                  SELECT 1
+                  FROM training_weeks
+                  WHERE account_id = ?
+                    AND week_start = ?
+                    AND status = 'published'
+                ) AS next_week_present,
+                (
+                  SELECT COUNT(*)
+                  FROM planned_workouts
+                  JOIN training_weeks
+                    ON training_weeks.id = planned_workouts.training_week_id
+                    AND training_weeks.account_id = planned_workouts.account_id
+                  WHERE planned_workouts.account_id = ?
+                    AND training_weeks.status = 'published'
+                    AND planned_workouts.scheduled_at_utc >= ?
+                    AND planned_workouts.scheduled_at_utc < ?
+                    AND planned_workouts.status IN ('planned', 'unknown')
+                ) AS unreported_recent_workouts
+            `,
+          )
+          .get(
+            accountId,
+            window.currentWeekStart,
+            accountId,
+            window.nextWeekStart,
+            accountId,
+            window.recentStartUtc,
+            window.nowUtc,
+          ) as TrainingStateRow;
+
+        return {
+          currentWeek: row.current_week_present ? "present" : "missing",
+          nextWeek: row.next_week_present ? "present" : "missing",
+          unreportedRecentWorkouts: row.unreported_recent_workouts,
+        };
+      });
     },
   };
 }

@@ -22,6 +22,12 @@ import {
   createAthleteProfileTool,
   SAVE_ATHLETE_PROFILE_TOOL,
 } from "./profile/tool.js";
+import {
+  trainingStateContext,
+  trainingStateUnavailableContext,
+} from "./schedule/context.js";
+import { createTrainingStateWindow } from "./schedule/dates.js";
+import { createScheduleTool, GET_SCHEDULE_TOOL } from "./schedule/tool.js";
 import { supportedSportsContext } from "./sports/index.js";
 
 export default definePluginEntry({
@@ -84,8 +90,25 @@ export default definePluginEntry({
         benchmarksContext = athleteBenchmarksUnavailableContext();
       }
 
+      let scheduleContext: string;
+      try {
+        const trainingState = database.plannedWorkouts.getTrainingState(
+          context.senderId,
+          createTrainingStateWindow(),
+        );
+        api.logger.debug?.(
+          `[schedule] context loaded (current=${trainingState.currentWeek}, next=${trainingState.nextWeek}, unreported=${trainingState.unreportedRecentWorkouts})`,
+        );
+        scheduleContext = trainingStateContext(trainingState);
+      } catch (error) {
+        api.logger.error(
+          `Failed to load training state context: ${String(error)}`,
+        );
+        scheduleContext = trainingStateUnavailableContext();
+      }
+
       return {
-        prependContext: `${sportsContext}\n\n${profileContext}\n\n${benchmarksContext}`,
+        prependContext: `${sportsContext}\n\n${profileContext}\n\n${benchmarksContext}\n\n${scheduleContext}`,
       };
     });
 
@@ -97,5 +120,8 @@ export default definePluginEntry({
       createAthleteBenchmarksTool({ database, logger: api.logger }),
       { name: SAVE_ATHLETE_BENCHMARKS_TOOL },
     );
+    api.registerTool(createScheduleTool({ database, logger: api.logger }), {
+      name: GET_SCHEDULE_TOOL,
+    });
   },
 });

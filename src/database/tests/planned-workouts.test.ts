@@ -118,6 +118,20 @@ test("returns only the current account's published workouts in time order", () =
     assert.ok(
       workouts.every(({ accountId }) => accountId === "telegram-user-1"),
     );
+
+    assert.deepEqual(
+      database.plannedWorkouts.getTrainingState("telegram-user-1", {
+        currentWeekStart: "2026-10-05",
+        nextWeekStart: "2026-10-12",
+        recentStartUtc: "2026-09-29T00:00:00.000Z",
+        nowUtc: "2026-10-06T00:00:00.000Z",
+      }),
+      {
+        currentWeek: "present",
+        nextWeek: "missing",
+        unreportedRecentWorkouts: 2,
+      },
+    );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

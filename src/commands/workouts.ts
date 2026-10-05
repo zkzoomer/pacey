@@ -10,7 +10,12 @@ import type { PlannedWorkout } from "../database/queries/planned-workouts.js";
 import { findSupportedSport } from "../sports/index.js";
 
 type WorkoutCommandDependencies = {
-  database: Pick<PaceyDatabase, "plannedWorkouts">;
+  database: {
+    plannedWorkouts: Pick<
+      PaceyDatabase["plannedWorkouts"],
+      "findPublishedBetween"
+    >;
+  };
   logger: Pick<PluginLogger, "debug" | "error">;
 };
 
