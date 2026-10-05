@@ -22,6 +22,7 @@ import {
   createAthleteProfileTool,
   SAVE_ATHLETE_PROFILE_TOOL,
 } from "./profile/tool.js";
+import { createWeekPlanTool, SAVE_WEEK_PLAN_TOOL } from "./planning/tool.js";
 import {
   trainingStateContext,
   trainingStateUnavailableContext,
@@ -122,6 +123,9 @@ export default definePluginEntry({
     );
     api.registerTool(createScheduleTool({ database, logger: api.logger }), {
       name: GET_SCHEDULE_TOOL,
+    });
+    api.registerTool(createWeekPlanTool({ database, logger: api.logger }), {
+      name: SAVE_WEEK_PLAN_TOOL,
     });
   },
 });
