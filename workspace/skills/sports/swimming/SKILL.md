@@ -22,6 +22,8 @@ their existing responsibilities:
 
 - The athlete-assessment skill owns interviewing, confirmation, and persistence.
 - The training-planning skill owns constructing and revising the overall plan.
+- The workout-reporting skill owns recognizing completed-workout messages,
+  common report fields, planned-workout matching, and persistence.
 - Athlete profile and benchmark tools own storage and requester scoping.
 
 Do not invent account identifiers, claim that this skill saved data, or propose
@@ -138,3 +140,26 @@ Accept incomplete post-session reports. Ask only about ambiguities that alter
 interpretation, such as metres versus yards or rest versus send-off. A sensible
 modification is not a failed workout. Update a benchmark only when the completed
 swim meets that benchmark's definition.
+
+## Workout report metrics
+
+When the workout-reporting skill asks for swimming-specific metrics, use this
+version 1 shape:
+
+```json
+{
+  "version": 1,
+  "distanceM": 2000,
+  "poolLengthM": 25,
+  "strokes": ["freestyle"]
+}
+```
+
+Every field after `version` is optional. Include `distanceM` only for a stated
+or safely summed completed distance in metres. Include `poolLengthM` only when
+the athlete identifies the course. Normalize explicitly stated strokes to
+lowercase names and deduplicate them while preserving their order. Do not
+convert yards to metres, infer a pool length, or treat a planned distance as
+completed. Keep interval details, technique response, modifications, symptoms,
+and other narrative evidence in the preserved original message rather than
+inventing additional version 1 fields.

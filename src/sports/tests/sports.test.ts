@@ -32,7 +32,21 @@ test("renders the exact sport-to-skill routing context", () => {
   assert.match(context, /id: swimming/);
   assert.match(context, /name: Swimming/);
   assert.match(context, /skill: swimming-coach/);
+  assert.match(context, /assessment, planning, and reporting support/);
   assert.match(context, /Do not infer that an unlisted sport is supported/);
+});
+
+test("defines swimming's versioned workout-report metrics", () => {
+  const skill = readFileSync(
+    join(sportsSkillsDirectory, "swimming", "SKILL.md"),
+    "utf8",
+  );
+
+  assert.match(skill, /## Workout report metrics/);
+  assert.match(skill, /"version": 1/);
+  assert.match(skill, /"distanceM": 2000/);
+  assert.match(skill, /"poolLengthM": 25/);
+  assert.match(skill, /"strokes": \["freestyle"\]/);
 });
 
 test("keeps the registry in sync with usable sport skills", () => {

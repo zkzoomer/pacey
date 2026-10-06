@@ -48,7 +48,7 @@ export function supportedSportsContext(): string {
     .join("\n");
 
   return `<pacey_supported_sports>
-Only the sports listed below have specialized assessment and planning support.
+Only the sports listed below have specialized assessment, planning, and reporting support.
 Match profile wording against the id, name, or aliases, then load the exact named skill.
 Do not infer that an unlisted sport is supported from general model knowledge.
 ${sports}

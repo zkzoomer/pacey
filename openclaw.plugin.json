@@ -13,7 +13,8 @@
       "pacey_save_athlete_profile",
       "pacey_save_athlete_benchmarks",
       "pacey_get_schedule",
-      "pacey_create_or_replace_week_plan"
+      "pacey_create_or_replace_week_plan",
+      "pacey_record_workout_report"
     ]
   },
   "toolMetadata": {
@@ -30,6 +31,10 @@
       "sideEffecting": false
     },
     "pacey_create_or_replace_week_plan": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": true
+    },
+    "pacey_record_workout_report": {
       "profiles": ["messaging", "full"],
       "sideEffecting": true
     }

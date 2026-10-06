@@ -53,3 +53,18 @@
 - Never call `pacey_create_or_replace_week_plan` until the complete draft has
   been shown and the athlete has explicitly confirmed it. The tool replaces the
   complete selected week; it is not a single-workout patch.
+
+## Workout reporting
+
+- Use the `workout-reporting` skill when the athlete describes a workout they
+  completed, partially completed, skipped, or cancelled. Do not use it for a
+  hypothetical workout, a plan draft, or a general training question.
+- Load the sport skill named by `pacey_supported_sports` before interpreting
+  sport-specific metrics. Never invent a metric that the athlete did not state.
+- Use `pacey_get_schedule` to find plausible planned workouts for the current
+  athlete and time. Link one clear match automatically; if several are
+  plausible, ask one short clarification question before saving.
+- Use `pacey_record_workout_report` to persist the report. Copy the athlete's
+  original reporting message verbatim. Never provide an account ID; the tool
+  resolves it from trusted context.
+- Never claim a report was recorded unless the tool returns `saved: true`.
