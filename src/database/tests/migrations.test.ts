@@ -40,6 +40,7 @@ test("initializes a fresh database at the latest version", () => {
         "planned_workouts",
         "training_weeks",
         "weights",
+        "workout_reports",
       ]);
 
       const athleteProfileColumns = database
@@ -86,6 +87,23 @@ test("initializes a fresh database at the latest version", () => {
         "status",
         "created_at",
         "updated_at",
+      ]);
+
+      const workoutReportColumns = database
+        .prepare("PRAGMA table_info(workout_reports)")
+        .all()
+        .map((column) => (column as { name: string }).name);
+      assert.deepEqual(workoutReportColumns, [
+        "id",
+        "account_id",
+        "planned_workout_id",
+        "original_message",
+        "completion_status",
+        "duration_minutes",
+        "perceived_rpe",
+        "sport_id",
+        "sport_metrics_json",
+        "created_at",
       ]);
     } finally {
       database.close();
@@ -146,6 +164,9 @@ test("upgrades a version 1 database without losing weight data", () => {
       );
       assert.doesNotThrow(() =>
         migratedDatabase.prepare("SELECT * FROM planned_workouts").all(),
+      );
+      assert.doesNotThrow(() =>
+        migratedDatabase.prepare("SELECT * FROM workout_reports").all(),
       );
     } finally {
       migratedDatabase.close();
