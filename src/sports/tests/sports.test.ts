@@ -64,6 +64,20 @@ test("keeps the registry in sync with usable sport skills", () => {
   }
 });
 
+test("keeps swimming onboarding focused on performance benchmarks", () => {
+  const assessment = readFileSync(
+    join(sportsSkillsDirectory, "swimming", "references", "assessment.md"),
+    "utf8",
+  );
+
+  assert.match(assessment, /This is a benchmark interview/);
+  assert.match(assessment, /Endurance.*continuous swim/s);
+  assert.match(assessment, /Repeat pace.*repeat set/s);
+  assert.doesNotMatch(assessment, /Can the athlete submerge/);
+  assert.doesNotMatch(assessment, /Descriptive starting levels/);
+  assert.doesNotMatch(assessment, /Practical assessment protocols/);
+});
+
 function readSkillMetadata(
   contents: string,
 ): { name: string; description: string } | null {

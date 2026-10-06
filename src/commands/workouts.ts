@@ -60,7 +60,7 @@ export function formatWorkoutSchedule(
   }
 
   const sections = [
-    view === "today" ? "Today's workouts" : "This week's workouts",
+    view === "today" ? "**Today's workouts**" : "**This week's workouts**",
   ];
   let previousDay = "";
 
@@ -70,7 +70,7 @@ export function formatWorkoutSchedule(
     const scheduledAt = new Date(workout.scheduledAtUtc);
     const calendarDay = localCalendarDay(scheduledAt);
     if (view === "week" && calendarDay !== previousDay) {
-      sections.push(WEEKDAY_FORMAT.format(scheduledAt));
+      sections.push(`---\n\n**<u>${WEEKDAY_FORMAT.format(scheduledAt)}</u>**`);
       previousDay = calendarDay;
     }
 
@@ -85,7 +85,7 @@ export function formatWorkoutSchedule(
         : `RPE ${workout.targetRpe}/10`;
 
     sections.push(
-      `${sportLabel} — ${titleCase(workout.status)}\n${period} around ${time} · ${workout.estimatedDurationMinutes} min · ${effort}\n${workout.instructionsMarkdown.trim()}`,
+      `**${sportLabel} — ${titleCase(workout.status)}**\n_${period} around ${time} · ${workout.estimatedDurationMinutes} min · ${effort}_\n\n${formatWorkoutInstructions(workout.instructionsMarkdown)}`,
     );
   }
 
@@ -176,4 +176,18 @@ function dayPeriod(hour: number): string {
 
 function titleCase(value: string): string {
   return value.charAt(0).toLocaleUpperCase() + value.slice(1);
+}
+
+function formatWorkoutInstructions(markdown: string): string {
+  return markdown
+    .trim()
+    .replace(
+      /^\*\*(Easier option[^*]*|Report afterward):\*\*\s*(.*)$/gim,
+      (_match, label: string, text: string) => {
+        const icon = label.toLowerCase().startsWith("easier option")
+          ? "💡"
+          : "📝";
+        return `> ${icon} **${label}**\n> _${text}_`;
+      },
+    );
 }

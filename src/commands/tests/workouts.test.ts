@@ -43,14 +43,16 @@ test("formats workouts chronologically with their schedule and instructions", ()
 
   assert.equal(
     formatWorkoutSchedule([evening, morning], "today"),
-    `Today's workouts
+    `**Today's workouts**
 
-🏊 Swimming — Planned
-Morning around 08:00 · 60 min · RPE 4/10
+**🏊 Swimming — Planned**
+_Morning around 08:00 · 60 min · RPE 4/10_
+
 Easy endurance swim
 
-🏊 Swimming — Planned
-Evening around 19:00 · 45 min · RPE 7/10
+**🏊 Swimming — Planned**
+_Evening around 19:00 · 45 min · RPE 7/10_
+
 Short speed session`,
   );
 });
@@ -69,9 +71,29 @@ test("groups the weekly view by local calendar day", () => {
 
   const output = formatWorkoutSchedule([wednesday, monday], "week");
 
-  assert.match(output, /^This week's workouts/);
+  assert.match(output, /^\*\*This week's workouts\*\*/);
+  assert.match(output, /---\n\n\*\*<u>Monday 5 Oct<\/u>\*\*/);
   assert.ok(output.indexOf("Monday 5 Oct") < output.indexOf("Wednesday 7 Oct"));
-  assert.match(output, /Evening around 19:00 · 60 min · Effort not set/);
+  assert.match(output, /_Evening around 19:00 · 60 min · Effort not set_/);
+});
+
+test("styles easier options and reporting prompts as callouts", () => {
+  const workout = plannedWorkout({
+    instructionsMarkdown: `Main set.
+
+**Easier option in either pool:** Do 3×300 m instead.
+
+**Report afterward:** pool length, completed distance and RPE.`,
+  });
+
+  assert.match(
+    formatWorkoutSchedule([workout], "today"),
+    /> 💡 \*\*Easier option in either pool\*\*\n> _Do 3×300 m instead\._/,
+  );
+  assert.match(
+    formatWorkoutSchedule([workout], "today"),
+    /> 📝 \*\*Report afterward\*\*\n> _pool length, completed distance and RPE\._/,
+  );
 });
 
 test("returns a friendly empty response without exposing another account", async () => {
