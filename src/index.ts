@@ -33,6 +33,12 @@ import {
 } from "./schedule/context.js";
 import { createTrainingStateWindow } from "./schedule/dates.js";
 import { createScheduleTool, GET_SCHEDULE_TOOL } from "./schedule/tool.js";
+import {
+  CANCEL_WORKOUT_TOOL,
+  createCancelWorkoutTool,
+  createRescheduleWorkoutTool,
+  RESCHEDULE_WORKOUT_TOOL,
+} from "./schedule/workout-tools.js";
 import { supportedSportsContext } from "./sports/index.js";
 
 export default definePluginEntry({
@@ -128,6 +134,14 @@ export default definePluginEntry({
     api.registerTool(createScheduleTool({ database, logger: api.logger }), {
       name: GET_SCHEDULE_TOOL,
     });
+    api.registerTool(
+      createRescheduleWorkoutTool({ database, logger: api.logger }),
+      { name: RESCHEDULE_WORKOUT_TOOL },
+    );
+    api.registerTool(
+      createCancelWorkoutTool({ database, logger: api.logger }),
+      { name: CANCEL_WORKOUT_TOOL },
+    );
     api.registerTool(createWeekPlanTool({ database, logger: api.logger }), {
       name: SAVE_WEEK_PLAN_TOOL,
     });

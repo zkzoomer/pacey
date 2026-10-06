@@ -13,6 +13,8 @@
       "pacey_save_athlete_profile",
       "pacey_save_athlete_benchmarks",
       "pacey_get_schedule",
+      "pacey_reschedule_workout",
+      "pacey_cancel_workout",
       "pacey_create_or_replace_week_plan",
       "pacey_record_workout_report"
     ]
@@ -29,6 +31,14 @@
     "pacey_get_schedule": {
       "profiles": ["messaging", "full"],
       "sideEffecting": false
+    },
+    "pacey_reschedule_workout": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": true
+    },
+    "pacey_cancel_workout": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": true
     },
     "pacey_create_or_replace_week_plan": {
       "profiles": ["messaging", "full"],

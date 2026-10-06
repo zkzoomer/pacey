@@ -23,6 +23,12 @@ export type PlannedWorkoutQueries = {
     accountId: string,
     window: TrainingStateWindow,
   ) => TrainingState;
+  reschedule: (
+    accountId: string,
+    workoutId: string,
+    scheduledAtUtc: string,
+  ) => void;
+  cancel: (accountId: string, workoutId: string) => void;
 };
 
 export type TrainingStateWindow = {
@@ -142,6 +148,56 @@ export function createPlannedWorkoutQueries(
           unreportedRecentWorkouts: row.unreported_recent_workouts,
         };
       });
+    },
+    reschedule(accountId, workoutId, scheduledAtUtc) {
+      const result = withDatabase(databasePath, (database) =>
+        database
+          .prepare(
+            `
+              UPDATE planned_workouts
+              SET scheduled_at_utc = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+                AND account_id = ?
+                AND status = 'planned'
+                AND EXISTS (
+                  SELECT 1
+                  FROM training_weeks
+                  WHERE training_weeks.id = planned_workouts.training_week_id
+                    AND training_weeks.account_id = planned_workouts.account_id
+                    AND training_weeks.status = 'published'
+                )
+            `,
+          )
+          .run(scheduledAtUtc, workoutId, accountId),
+      );
+      if (result.changes !== 1) {
+        throw new Error("The planned workout was not found.");
+      }
+    },
+    cancel(accountId, workoutId) {
+      const result = withDatabase(databasePath, (database) =>
+        database
+          .prepare(
+            `
+              UPDATE planned_workouts
+              SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+                AND account_id = ?
+                AND status = 'planned'
+                AND EXISTS (
+                  SELECT 1
+                  FROM training_weeks
+                  WHERE training_weeks.id = planned_workouts.training_week_id
+                    AND training_weeks.account_id = planned_workouts.account_id
+                    AND training_weeks.status = 'published'
+                )
+            `,
+          )
+          .run(workoutId, accountId),
+      );
+      if (result.changes !== 1) {
+        throw new Error("The planned workout was not found.");
+      }
     },
   };
 }
