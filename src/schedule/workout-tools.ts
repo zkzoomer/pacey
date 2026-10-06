@@ -60,6 +60,7 @@ type WorkoutToolDependencies = {
     >;
   };
   logger: Pick<PluginLogger, "debug" | "error">;
+  reconcileReminders?: () => Promise<void>;
 };
 
 export function createRescheduleWorkoutTool(
@@ -96,6 +97,7 @@ export function createRescheduleWorkoutTool(
             input.workoutId,
             input.scheduledAtUtc,
           );
+          await dependencies.reconcileReminders?.();
           const result = {
             updated: true,
             workoutId: input.workoutId,
@@ -145,6 +147,7 @@ export function createCancelWorkoutTool(
 
         try {
           dependencies.database.plannedWorkouts.cancel(accountId, workoutId);
+          await dependencies.reconcileReminders?.();
           const result = {
             updated: true,
             workoutId,

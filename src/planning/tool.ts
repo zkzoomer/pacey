@@ -82,6 +82,7 @@ type WeekPlanToolDependencies = {
     weekPlans: Pick<PaceyDatabase["weekPlans"], "replace">;
   };
   logger: Pick<PluginLogger, "debug" | "error">;
+  reconcileReminders?: () => Promise<void>;
 };
 
 export function createWeekPlanTool(
@@ -128,6 +129,7 @@ export function createWeekPlanTool(
             accountId,
             ...validation.plan,
           });
+          await dependencies.reconcileReminders?.();
           const result = {
             saved: true,
             weekStart: validation.plan.weekStart,

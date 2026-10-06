@@ -19,6 +19,10 @@ export type PlannedWorkoutQueries = {
     startUtc: string,
     endUtc: string,
   ) => PlannedWorkout[];
+  findForReminders: (
+    nowUtc: string,
+    postWorkoutDelayMinutes: number,
+  ) => PlannedWorkout[];
   getTrainingState: (
     accountId: string,
     window: TrainingStateWindow,
@@ -95,6 +99,41 @@ export function createPlannedWorkoutQueries(
             `,
           )
           .all(accountId, startUtc, endUtc)
+          .map((row) => toPlannedWorkout(row as PlannedWorkoutRow)),
+      );
+    },
+    findForReminders(nowUtc, postWorkoutDelayMinutes) {
+      return withDatabase(databasePath, (database) =>
+        database
+          .prepare(
+            `
+              SELECT
+                planned_workouts.id,
+                planned_workouts.training_week_id,
+                planned_workouts.account_id,
+                planned_workouts.sport_id,
+                planned_workouts.scheduled_at_utc,
+                planned_workouts.timezone,
+                planned_workouts.estimated_duration_minutes,
+                planned_workouts.target_rpe,
+                planned_workouts.instructions_markdown,
+                planned_workouts.status
+              FROM planned_workouts
+              JOIN training_weeks
+                ON training_weeks.id = planned_workouts.training_week_id
+                AND training_weeks.account_id = planned_workouts.account_id
+              WHERE training_weeks.status = 'published'
+                AND planned_workouts.status = 'planned'
+                AND (
+                  julianday(planned_workouts.scheduled_at_utc)
+                  + (
+                    planned_workouts.estimated_duration_minutes + ?
+                  ) / 1440.0
+                ) > julianday(?)
+              ORDER BY planned_workouts.scheduled_at_utc, planned_workouts.id
+            `,
+          )
+          .all(postWorkoutDelayMinutes, nowUtc)
           .map((row) => toPlannedWorkout(row as PlannedWorkoutRow)),
       );
     },

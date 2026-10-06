@@ -26,6 +26,7 @@ import {
   createWorkoutReportTool,
   RECORD_WORKOUT_REPORT_TOOL,
 } from "./reporting/tool.js";
+import { createReminderService } from "./reminders/service.js";
 import { createWeekPlanTool, SAVE_WEEK_PLAN_TOOL } from "./planning/tool.js";
 import {
   trainingStateContext,
@@ -51,11 +52,13 @@ export default definePluginEntry({
       api.runtime.state.resolveStateDir(process.env),
     );
     const sportsContext = supportedSportsContext();
+    const reminders = createReminderService(database, api.logger);
 
     api.registerService({
       id: "pacey-database",
       start: database.initialize,
     });
+    api.registerService(reminders.service);
 
     api.registerCommand(createWeightCommand({ database, logger: api.logger }));
     api.registerCommand(
@@ -135,20 +138,34 @@ export default definePluginEntry({
       name: GET_SCHEDULE_TOOL,
     });
     api.registerTool(
-      createRescheduleWorkoutTool({ database, logger: api.logger }),
+      createRescheduleWorkoutTool({
+        database,
+        logger: api.logger,
+        reconcileReminders: reminders.reconcile,
+      }),
       { name: RESCHEDULE_WORKOUT_TOOL },
     );
     api.registerTool(
-      createCancelWorkoutTool({ database, logger: api.logger }),
+      createCancelWorkoutTool({
+        database,
+        logger: api.logger,
+        reconcileReminders: reminders.reconcile,
+      }),
       { name: CANCEL_WORKOUT_TOOL },
     );
-    api.registerTool(createWeekPlanTool({ database, logger: api.logger }), {
-      name: SAVE_WEEK_PLAN_TOOL,
-    });
+    api.registerTool(
+      createWeekPlanTool({
+        database,
+        logger: api.logger,
+        reconcileReminders: reminders.reconcile,
+      }),
+      { name: SAVE_WEEK_PLAN_TOOL },
+    );
     api.registerTool(
       createWorkoutReportTool({
         database,
         logger: api.logger,
+        reconcileReminders: reminders.reconcile,
       }),
       { name: RECORD_WORKOUT_REPORT_TOOL },
     );

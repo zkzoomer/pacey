@@ -84,6 +84,7 @@ const outputSchema = Type.Object(
 type WorkoutReportToolDependencies = {
   database: Pick<PaceyDatabase, "workoutReports">;
   logger: Pick<PluginLogger, "debug" | "error">;
+  reconcileReminders?: () => Promise<void>;
 };
 
 export function createWorkoutReportTool(
@@ -139,6 +140,7 @@ export function createWorkoutReportTool(
             sportId: input.sportId,
             sportMetricsJson,
           } satisfies RecordWorkoutReport);
+          await dependencies.reconcileReminders?.();
           dependencies.logger.debug?.(
             `[workout-report] report persisted for current requester (linked=${saved.plannedWorkoutId !== null})`,
           );
