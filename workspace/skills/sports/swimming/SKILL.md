@@ -96,9 +96,12 @@ helps the athlete act or when they request it.
 
 ## Safety boundaries
 
-Establish basic water competence before prescribing independent fitness
-training. An athlete who cannot reliably recover, breathe, stop safely, and
-return to support needs supervised instruction rather than a remote workout.
+Do not make basic water-competence screening part of a routine benchmark
+interview. Regular independent swimming, structured-set experience, or a
+meaningful swim performance is sufficient evidence to proceed. If the athlete
+explicitly reports that they cannot swim independently, cannot return to
+support, or feel unsafe in the water, recommend supervised instruction rather
+than an independent fitness workout.
 
 Do not prescribe:
 

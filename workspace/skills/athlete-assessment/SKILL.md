@@ -41,7 +41,8 @@ intended plan from their profile. Resolve each one against the injected
 specialized support. Before assessing a supported sport, load the exact skill
 named by that block. Sport skills define:
 
-- The minimum information that could materially change an initial plan.
+- The small set of existing performance benchmarks that could materially change
+  an initial plan.
 - Useful optional benchmarks and sport-specific terminology.
 - How to ask for and interpret those benchmarks.
 - What to record when a benchmark is unknown.
@@ -65,10 +66,13 @@ asking a question. Reuse facts the athlete has already supplied and never ask
 them to repeat those facts.
 
 Assess only sports relevant to the athlete's near-term goals or intended plan.
-Ask only questions whose answers could materially affect that plan. Ask about
-one sport and one topic per assistant message. A topic may request a small set
-of closely related figures when that is easier to answer than a long sequence
-of single-number questions.
+Ask only for performance measurements whose answers could materially affect
+that plan. Do not turn benchmark collection into a general readiness, safety,
+experience, technique, equipment, or lifestyle intake. Those facts belong in
+the athlete profile unless the athlete raises a new issue. Ask about one sport
+and one topic per assistant message. A topic may request a small set of closely
+related figures when that is easier to answer than a long sequence of
+single-number questions.
 
 Accept estimates, approximate ranges, recent working values, and explicit “I
 don't know” answers. Preserve uncertainty rather than manufacturing precision.
@@ -79,7 +83,7 @@ Never require or encourage a fresh maximal-effort test merely to complete the
 assessment. If a useful benchmark is unknown, record it as unknown and allow
 planning to use a conservative assessment session. Stop asking questions as
 soon as the relevant sport skills indicate that enough information exists for a
-safe and useful first plan.
+useful first plan.
 
 ## Complete benchmark document
 
