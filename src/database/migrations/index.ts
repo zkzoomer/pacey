@@ -16,6 +16,10 @@ const migrations = [
     version: 5,
     filename: "005-create-workout-reports.sql",
   },
+  {
+    version: 6,
+    filename: "006-create-weekly-reviews.sql",
+  },
 ] satisfies readonly Migration[];
 
 function validateMigrations(): void {

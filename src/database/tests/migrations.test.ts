@@ -39,6 +39,7 @@ test("initializes a fresh database at the latest version", () => {
         "athlete_profiles",
         "planned_workouts",
         "training_weeks",
+        "weekly_reviews",
         "weights",
         "workout_reports",
       ]);
@@ -105,6 +106,18 @@ test("initializes a fresh database at the latest version", () => {
         "sport_metrics_json",
         "created_at",
       ]);
+
+      const weeklyReviewColumns = database
+        .prepare("PRAGMA table_info(weekly_reviews)")
+        .all()
+        .map((column) => (column as { name: string }).name);
+      assert.deepEqual(weeklyReviewColumns, [
+        "account_id",
+        "week_start",
+        "review_markdown",
+        "created_at",
+        "updated_at",
+      ]);
     } finally {
       database.close();
     }
@@ -167,6 +180,9 @@ test("upgrades a version 1 database without losing weight data", () => {
       );
       assert.doesNotThrow(() =>
         migratedDatabase.prepare("SELECT * FROM workout_reports").all(),
+      );
+      assert.doesNotThrow(() =>
+        migratedDatabase.prepare("SELECT * FROM weekly_reviews").all(),
       );
     } finally {
       migratedDatabase.close();
