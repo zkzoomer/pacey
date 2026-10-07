@@ -59,13 +59,19 @@ const parameters = Type.Object(
     sportMetrics: Type.Union(
       [
         Type.Object(
-          { version: Type.Integer({ minimum: 1 }) },
-          { additionalProperties: true },
+          {
+            version: Type.Integer({ minimum: 1 }),
+            totals: Type.Optional(
+              Type.Record(Type.String(), Type.Number({ minimum: 0 })),
+            ),
+            details: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+          },
+          { additionalProperties: false },
         ),
         Type.Null(),
       ],
       {
-        description: `Optional versioned sport-specific JSON of at most ${MAX_SPORT_METRICS_LENGTH} characters. Follow the relevant sport skill.`,
+        description: `Optional versioned sport-specific JSON of at most ${MAX_SPORT_METRICS_LENGTH} characters. Additive numeric metrics belong in totals; other structured values belong in details. Follow the relevant sport skill.`,
       },
     ),
   },

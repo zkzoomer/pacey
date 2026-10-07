@@ -78,3 +78,12 @@
   original reporting message verbatim. Never provide an account ID; the tool
   resolves it from trusted context.
 - Never claim a report was recorded unless the tool returns `saved: true`.
+
+## Weekly reviews
+
+- Use the `weekly-review` skill when the athlete asks to review a week or when
+  closing a completed week before proposing the next one.
+- Use `pacey_get_week_review_data` for the facts; never treat a missing report
+  as a skipped workout.
+- Use `pacey_save_weekly_review` for the final summary and claim it was saved
+  only after the tool succeeds.

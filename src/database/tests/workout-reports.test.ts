@@ -27,9 +27,11 @@ test("records only the current account's planned workout", () => {
       sportId: "swimming",
       sportMetricsJson: JSON.stringify({
         version: 1,
-        distanceM: 2000,
-        poolLengthM: 25,
-        strokes: ["freestyle"],
+        totals: { distanceM: 2000 },
+        details: {
+          poolLengthM: 25,
+          strokes: ["freestyle"],
+        },
       }),
     });
 
@@ -49,9 +51,11 @@ test("records only the current account's planned workout", () => {
           sportId: "swimming",
           sportMetrics: {
             version: 1,
-            distanceM: 2000,
-            poolLengthM: 25,
-            strokes: ["freestyle"],
+            totals: { distanceM: 2000 },
+            details: {
+              poolLengthM: 25,
+              strokes: ["freestyle"],
+            },
           },
           createdAt:
             database.workoutReports.findByAccountId("telegram-user-1")[0]

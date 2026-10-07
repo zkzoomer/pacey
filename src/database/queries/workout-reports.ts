@@ -5,7 +5,11 @@ import { withDatabase } from "../connection.js";
 export type WorkoutCompletionStatus =
   "completed" | "partial" | "skipped" | "cancelled";
 
-export type SportMetrics = { version: number } & Record<string, unknown>;
+export type SportMetrics = {
+  version: number;
+  totals?: Record<string, number>;
+  details?: Record<string, unknown>;
+};
 
 export type WorkoutReport = {
   id: string;

@@ -44,6 +44,8 @@ test("defines swimming's versioned workout-report metrics", () => {
 
   assert.match(skill, /## Workout report metrics/);
   assert.match(skill, /"version": 1/);
+  assert.match(skill, /"totals":/);
+  assert.match(skill, /"details":/);
   assert.match(skill, /"distanceM": 2000/);
   assert.match(skill, /"poolLengthM": 25/);
   assert.match(skill, /"strokes": \["freestyle"\]/);

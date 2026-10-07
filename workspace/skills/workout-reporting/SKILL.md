@@ -30,7 +30,9 @@ Extract only these shared fields:
 - `durationMinutes`: a positive whole number, or `null`;
 - `perceivedRpe`: the athlete's perceived effort from 1-10, or `null`;
 - `sportId`: the exact canonical ID from `pacey_supported_sports`;
-- `sportMetrics`: versioned sport-specific JSON, or `null`.
+- `sportMetrics`: versioned sport-specific JSON, or `null`. Its optional
+  `totals` object contains only additive numeric values; its optional `details`
+  object contains other structured sport context.
 
 Do not manufacture a duration, effort, or metric from vague language. Missing
 optional values do not block a report and should not trigger a questionnaire.

@@ -27,6 +27,12 @@ import {
   RECORD_WORKOUT_REPORT_TOOL,
 } from "./reporting/tool.js";
 import { createReminderService } from "./reminders/service.js";
+import {
+  createSaveWeeklyReviewTool,
+  createWeekReviewDataTool,
+  GET_WEEK_REVIEW_DATA_TOOL,
+  SAVE_WEEKLY_REVIEW_TOOL,
+} from "./reviews/tool.js";
 import { createWeekPlanTool, SAVE_WEEK_PLAN_TOOL } from "./planning/tool.js";
 import {
   trainingStateContext,
@@ -168,6 +174,14 @@ export default definePluginEntry({
         reconcileReminders: reminders.reconcile,
       }),
       { name: RECORD_WORKOUT_REPORT_TOOL },
+    );
+    api.registerTool(
+      createWeekReviewDataTool({ database, logger: api.logger }),
+      { name: GET_WEEK_REVIEW_DATA_TOOL },
+    );
+    api.registerTool(
+      createSaveWeeklyReviewTool({ database, logger: api.logger }),
+      { name: SAVE_WEEKLY_REVIEW_TOOL },
     );
   },
 });

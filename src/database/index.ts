@@ -22,6 +22,10 @@ import {
   createWorkoutReportQueries,
   type WorkoutReportQueries,
 } from "./queries/workout-reports.js";
+import {
+  createWeeklyReviewQueries,
+  type WeeklyReviewQueries,
+} from "./queries/weekly-reviews.js";
 
 export type PaceyDatabase = {
   initialize: () => void;
@@ -30,6 +34,7 @@ export type PaceyDatabase = {
   plannedWorkouts: PlannedWorkoutQueries;
   weekPlans: WeekPlanQueries;
   workoutReports: WorkoutReportQueries;
+  weeklyReviews: WeeklyReviewQueries;
   weights: WeightQueries;
 };
 
@@ -43,6 +48,7 @@ export function createDatabase(stateDirectory: string): PaceyDatabase {
     plannedWorkouts: createPlannedWorkoutQueries(databasePath),
     weekPlans: createWeekPlanQueries(databasePath),
     workoutReports: createWorkoutReportQueries(databasePath),
+    weeklyReviews: createWeeklyReviewQueries(databasePath),
     weights: createWeightQueries(databasePath),
   };
 }

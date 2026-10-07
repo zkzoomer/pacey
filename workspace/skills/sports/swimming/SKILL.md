@@ -149,17 +149,22 @@ version 1 shape:
 ```json
 {
   "version": 1,
-  "distanceM": 2000,
-  "poolLengthM": 25,
-  "strokes": ["freestyle"]
+  "totals": {
+    "distanceM": 2000
+  },
+  "details": {
+    "poolLengthM": 25,
+    "strokes": ["freestyle"]
+  }
 }
 ```
 
-Every field after `version` is optional. Include `distanceM` only for a stated
-or safely summed completed distance in metres. Include `poolLengthM` only when
-the athlete identifies the course. Normalize explicitly stated strokes to
-lowercase names and deduplicate them while preserving their order. Do not
-convert yards to metres, infer a pool length, or treat a planned distance as
-completed. Keep interval details, technique response, modifications, symptoms,
-and other narrative evidence in the preserved original message rather than
-inventing additional version 1 fields.
+Every field after `version` is optional. Put only additive values under
+`totals`; include `distanceM` only for a stated or safely summed completed
+distance in metres. Put non-additive structured context under `details`.
+Include `poolLengthM` only when the athlete identifies the course. Normalize
+explicitly stated strokes to lowercase names and deduplicate them while
+preserving their order. Do not convert yards to metres, infer a pool length, or
+treat a planned distance as completed. Keep interval details, technique
+response, modifications, symptoms, and other narrative evidence in the
+preserved original message rather than inventing additional version 1 fields.

@@ -41,6 +41,9 @@ Every plan covers one Monday-to-Sunday calendar week.
 - If no current plan exists from Monday through Saturday and the athlete has not
   said which week they mean, ask whether to plan the remainder of this week or
   next week. Ask this as one short question.
+- Before proposing next week on Sunday or after a completed training week, use
+  the weekly-review skill unless that week was already reviewed in the current
+  conversation or the athlete explicitly asks to skip the review.
 
 Use the athlete's timezone when available. Until per-athlete timezones are
 populated, use the Gateway/server timezone. Week starts and displayed times are

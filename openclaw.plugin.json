@@ -16,7 +16,9 @@
       "pacey_reschedule_workout",
       "pacey_cancel_workout",
       "pacey_create_or_replace_week_plan",
-      "pacey_record_workout_report"
+      "pacey_record_workout_report",
+      "pacey_get_week_review_data",
+      "pacey_save_weekly_review"
     ]
   },
   "toolMetadata": {
@@ -45,6 +47,14 @@
       "sideEffecting": true
     },
     "pacey_record_workout_report": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": true
+    },
+    "pacey_get_week_review_data": {
+      "profiles": ["messaging", "full"],
+      "sideEffecting": false
+    },
+    "pacey_save_weekly_review": {
       "profiles": ["messaging", "full"],
       "sideEffecting": true
     }

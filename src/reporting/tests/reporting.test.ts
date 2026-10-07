@@ -62,9 +62,11 @@ test("records against only the trusted requester's planned workout", async () =>
           originalMessage,
           sportMetrics: {
             version: 1,
-            distanceM: 2_000,
-            poolLengthM: 25,
-            strokes: ["freestyle"],
+            totals: { distanceM: 2_000 },
+            details: {
+              poolLengthM: 25,
+              strokes: ["freestyle"],
+            },
           },
         },
       ],
@@ -95,9 +97,11 @@ function validReport() {
     sportId: "swimming",
     sportMetrics: {
       version: 1,
-      distanceM: 2_000,
-      poolLengthM: 25,
-      strokes: ["freestyle"],
+      totals: { distanceM: 2_000 },
+      details: {
+        poolLengthM: 25,
+        strokes: ["freestyle"],
+      },
     },
   };
 }
