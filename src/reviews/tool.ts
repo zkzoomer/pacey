@@ -57,6 +57,21 @@ const reviewDataSchema = Type.Object(
       Type.Object({
         sportId: Type.String(),
         originalMessage: Type.String(),
+        sportMetrics: Type.Union([
+          Type.Object(
+            {
+              version: Type.Integer({ minimum: 1 }),
+              totals: Type.Optional(
+                Type.Record(Type.String(), Type.Number({ minimum: 0 })),
+              ),
+              details: Type.Optional(
+                Type.Record(Type.String(), Type.Unknown()),
+              ),
+            },
+            { additionalProperties: false },
+          ),
+          Type.Null(),
+        ]),
       }),
     ),
     storedReviewMarkdown: Type.Union([Type.String(), Type.Null()]),
@@ -97,7 +112,7 @@ export function createWeekReviewDataTool(
       name: GET_WEEK_REVIEW_DATA_TOOL,
       label: "Get weekly review data",
       description:
-        "Calculate adherence, duration, effort, missing reports, per-sport totals, and report notes for one week belonging to the current Telegram user.",
+        "Calculate adherence, duration, effort, missing reports, per-sport totals, and complete report data for one week belonging to the current Telegram user.",
       parameters: weekParameters,
       outputSchema: reviewDataSchema,
       async execute(_toolCallId, rawParameters) {

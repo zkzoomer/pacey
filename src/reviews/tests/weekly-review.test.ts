@@ -71,6 +71,12 @@ test("calculates isolated weekly facts and stores a concise review", async () =>
       },
     ]);
     assert.equal(data.reports.length, 3);
+    assert.deepEqual(data.reports[0]?.sportMetrics, {
+      version: 1,
+      totals: { distanceM: 2_000 },
+      details: { poolLengthM: 25, strokes: ["freestyle"] },
+    });
+    assert.equal(data.reports[2]?.sportMetrics, null);
     assert.equal(data.storedReviewMarkdown, null);
     assert.equal(
       data.reports.some((report) =>
@@ -179,6 +185,7 @@ function recordReports(database: ReturnType<typeof createDatabase>): void {
     sportMetricsJson: JSON.stringify({
       version: 1,
       totals: { distanceM: 2_000 },
+      details: { poolLengthM: 25, strokes: ["freestyle"] },
     }),
   });
   database.workoutReports.record({

@@ -1,6 +1,9 @@
 import { withDatabase } from "../connection.js";
 
-import type { WorkoutCompletionStatus } from "./workout-reports.js";
+import type {
+  SportMetrics,
+  WorkoutCompletionStatus,
+} from "./workout-reports.js";
 
 export type WeekReviewRange = {
   accountId: string;
@@ -35,7 +38,11 @@ export type WeekReviewData = {
     sportId: string;
     scheduledAtUtc: string;
   }>;
-  reports: Array<{ sportId: string; originalMessage: string }>;
+  reports: Array<{
+    sportId: string;
+    originalMessage: string;
+    sportMetrics: SportMetrics | null;
+  }>;
   storedReviewMarkdown: string | null;
 };
 
@@ -253,6 +260,10 @@ function aggregate(
     reports: reports.map((report) => ({
       sportId: report.sport_id,
       originalMessage: report.original_message,
+      sportMetrics:
+        report.sport_metrics_json === null
+          ? null
+          : (JSON.parse(report.sport_metrics_json) as SportMetrics),
     })),
     storedReviewMarkdown,
   };
