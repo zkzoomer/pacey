@@ -29,7 +29,7 @@ test("reconciles workout reminders without duplicates", async () => {
           estimatedDurationMinutes: 60,
           targetRpe: 6,
           instructionsMarkdown:
-            "5×200 m controlled.\n\n**Report afterward:** Send each 200 m split, actual rest, and RPE.",
+            "5×200 m controlled.\n\n**Before workout:** Bring fins for the technique set.\n\n**Report afterward:** 🏊 How did the 5×200 m set go? Send each split, actual rest, and RPE.",
         },
       ],
     });
@@ -61,12 +61,15 @@ test("reconciles workout reminders without duplicates", async () => {
       ],
     );
     assert.deepEqual(
-      cron.jobs.map((job) => job.payload.toolsAllow),
-      [[], []],
+      cron.jobs.map((job) => job.payload.kind),
+      ["command", "command"],
     );
-    assert.match(
-      cron.jobs[1].payload.message,
-      /\*\*Report afterward:\*\* Send each 200 m split, actual rest, and RPE\./,
+    assert.deepEqual(
+      cron.jobs.map((job) => job.payload.argv[3]),
+      [
+        "🏊 Your swimming workout starts in about 60 minutes.\n\nUse /workout_today for the full session.\n\n**Before workout:** Bring fins for the technique set.",
+        "🏊 How did the 5×200 m set go? Send each split, actual rest, and RPE.",
+      ],
     );
     const originalIds = cron.jobs.map((job) => job.id);
     await reconcileReminderJobs(database, cron, now);

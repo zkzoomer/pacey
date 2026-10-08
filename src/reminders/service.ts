@@ -6,12 +6,17 @@ import type {
 
 import type { PaceyDatabase } from "../database/index.js";
 import type { PlannedWorkout } from "../database/queries/planned-workouts.js";
+import {
+  extractBeforeWorkoutNote,
+  extractReportPrompt,
+} from "../planning/validation.js";
 import { findSupportedSport } from "../sports/index.js";
 
 const RECONCILIATION_INTERVAL_MS = 10 * 60_000;
 const PRE_WORKOUT_MINUTES = 60;
 const POST_WORKOUT_DELAY_MINUTES = 30;
 const DECLARATION_PREFIX = "pacey:reminder:";
+const PRINT_REMINDER_SCRIPT = "process.stdout.write(process.argv[1])";
 
 type ReminderType = "pre_workout" | "post_workout";
 
@@ -30,10 +35,10 @@ export type ReminderCronInput = {
   sessionTarget: "isolated";
   wakeMode: "now";
   payload: {
-    kind: "agentTurn";
-    message: string;
-    lightContext: true;
-    toolsAllow: [];
+    kind: "command";
+    argv: [string, "-e", string, string];
+    timeoutSeconds: number;
+    outputMaxBytes: number;
   };
   delivery: {
     mode: "announce";
@@ -190,10 +195,10 @@ function remindersForWorkout(
         sessionTarget: "isolated",
         wakeMode: "now",
         payload: {
-          kind: "agentTurn",
-          message: `Send this reminder exactly as written, with no additions or explanation:\n\n${reminder.text}`,
-          lightContext: true,
-          toolsAllow: [],
+          kind: "command",
+          argv: [process.execPath, "-e", PRINT_REMINDER_SCRIPT, reminder.text],
+          timeoutSeconds: 10,
+          outputMaxBytes: 20_000,
         },
         delivery: {
           mode: "announce",
@@ -208,22 +213,19 @@ function preWorkoutText(workout: PlannedWorkout): string {
   const sport = findSupportedSport(workout.sportId);
   const label = sport?.name.toLocaleLowerCase() ?? workout.sportId;
   const emoji = sport?.emoji ?? "🏃";
-  return `${emoji} Your ${label} workout starts in about 30 minutes.\n\nUse /workout_today for the full session.`;
+  const standardReminder = `${emoji} Your ${label} workout starts in about 60 minutes.\n\nUse /workout_today for the full session.`;
+  const extraNote = extractBeforeWorkoutNote(workout.instructionsMarkdown);
+  return extraNote === null
+    ? standardReminder
+    : `${standardReminder}\n\n${extraNote}`;
 }
 
 function postWorkoutText(workout: PlannedWorkout): string {
   const sport = findSupportedSport(workout.sportId);
   const label = sport?.name.toLocaleLowerCase() ?? workout.sportId;
   const emoji = sport?.emoji ?? "🏃";
-  const reportPrompt = extractReportPrompt(workout.instructionsMarkdown);
-  return `${emoji} How did your ${label} workout go?\n\n${reportPrompt}`;
-}
-
-function extractReportPrompt(instructions: string): string {
-  const marker = "**Report afterward:**";
-  const markerIndex = instructions
-    .toLocaleLowerCase()
-    .lastIndexOf(marker.toLocaleLowerCase());
-  if (markerIndex !== -1) return instructions.slice(markerIndex).trim();
-  return "Tell me what you completed, how long it took, and your RPE.";
+  return (
+    extractReportPrompt(workout.instructionsMarkdown) ??
+    `${emoji} How did your ${label} workout go? Tell me what you completed, how long it took, and your RPE.`
+  );
 }

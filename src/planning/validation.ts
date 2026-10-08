@@ -3,6 +3,8 @@ import { findSupportedSport } from "../sports/index.js";
 export const MAX_PLANNED_WORKOUTS = 28;
 export const MAX_WORKOUT_DURATION_MINUTES = 1_440;
 export const MAX_WORKOUT_INSTRUCTIONS_LENGTH = 20_000;
+export const BEFORE_WORKOUT_MARKER = "**Before workout:**";
+export const REPORT_AFTERWARD_MARKER = "**Report afterward:**";
 export const WORKOUT_ID_PATTERN = "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$";
 export const UTC_TIMESTAMP_PATTERN =
   "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$";
@@ -130,6 +132,11 @@ export function validateWeekPlan(input: unknown): WeekPlanValidation {
         `${field}.instructionsMarkdown cannot exceed ${MAX_WORKOUT_INSTRUCTIONS_LENGTH} characters.`,
       );
     }
+    if (extractReportPrompt(instructionsMarkdown) === null) {
+      return invalid(
+        `${field}.instructionsMarkdown must contain a non-empty "${REPORT_AFTERWARD_MARKER}" section.`,
+      );
+    }
 
     workouts.push({
       id,
@@ -159,6 +166,36 @@ export function validateWeekPlan(input: unknown): WeekPlanValidation {
     ok: true,
     plan: { weekStart, timezone, workouts: chronologicalWorkouts },
   };
+}
+
+export function extractReportPrompt(instructions: string): string | null {
+  const markerIndex = instructions
+    .toLocaleLowerCase()
+    .lastIndexOf(REPORT_AFTERWARD_MARKER.toLocaleLowerCase());
+  if (markerIndex === -1) return null;
+
+  const body = instructions
+    .slice(markerIndex + REPORT_AFTERWARD_MARKER.length)
+    .trim();
+  return body.length === 0 ? null : body;
+}
+
+export function extractBeforeWorkoutNote(instructions: string): string | null {
+  const normalizedInstructions = instructions.toLocaleLowerCase();
+  const markerIndex = normalizedInstructions.lastIndexOf(
+    BEFORE_WORKOUT_MARKER.toLocaleLowerCase(),
+  );
+  if (markerIndex === -1) return null;
+
+  const reportIndex = normalizedInstructions.indexOf(
+    REPORT_AFTERWARD_MARKER.toLocaleLowerCase(),
+    markerIndex + BEFORE_WORKOUT_MARKER.length,
+  );
+  const note = instructions
+    .slice(markerIndex, reportIndex === -1 ? undefined : reportIndex)
+    .trim();
+  const body = note.slice(BEFORE_WORKOUT_MARKER.length).trim();
+  return body.length === 0 ? null : note;
 }
 
 function invalid(message: string): WeekPlanValidation {

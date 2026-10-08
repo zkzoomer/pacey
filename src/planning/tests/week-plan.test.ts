@@ -47,6 +47,14 @@ test("validates canonical workouts, dates, effort, and non-overlap", () => {
     validationError(updateWorkout(validPlan(), 0, { targetRpe: 11 })),
     /integer from 1-10/,
   );
+  assert.match(
+    validationError(
+      updateWorkout(validPlan(), 0, {
+        instructionsMarkdown: "Technique and easy endurance swim",
+      }),
+    ),
+    /Report afterward/,
+  );
 
   const duplicateIds = validPlan();
   duplicateIds.workouts[1].id = duplicateIds.workouts[0].id;
@@ -112,7 +120,8 @@ test("requires onboarding and atomically replaces only the requester's week", as
       {
         ...replacement.workouts[0],
         id: "replacement-swim",
-        instructionsMarkdown: "Replacement swim",
+        instructionsMarkdown:
+          "Replacement swim\n\n**Report afterward:** Tell me your completed distance and RPE.",
       },
     ];
     const replacementResult = await tool.execute("tool-call-4", replacement);
@@ -195,7 +204,8 @@ function validPlan() {
         scheduledAtUtc: "2026-10-06T06:00:00.000Z",
         estimatedDurationMinutes: 60,
         targetRpe: 4 as number | null,
-        instructionsMarkdown: "Technique and easy endurance swim",
+        instructionsMarkdown:
+          "Technique and easy endurance swim\n\n**Report afterward:** Tell me your completed distance and RPE.",
       },
       {
         id: "swim-thursday",
@@ -203,7 +213,8 @@ function validPlan() {
         scheduledAtUtc: "2026-10-08T17:00:00.000Z",
         estimatedDurationMinutes: 45,
         targetRpe: 7 as number | null,
-        instructionsMarkdown: "Controlled sustained swim",
+        instructionsMarkdown:
+          "Controlled sustained swim\n\n**Report afterward:** Tell me your splits and RPE.",
       },
     ],
   };

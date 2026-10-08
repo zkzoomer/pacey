@@ -6,9 +6,11 @@ import { Type } from "typebox";
 
 import type { PaceyDatabase } from "../database/index.js";
 import {
+  BEFORE_WORKOUT_MARKER,
   MAX_PLANNED_WORKOUTS,
   MAX_WORKOUT_DURATION_MINUTES,
   MAX_WORKOUT_INSTRUCTIONS_LENGTH,
+  REPORT_AFTERWARD_MARKER,
   UTC_TIMESTAMP_PATTERN,
   validateWeekPlan,
   WORKOUT_ID_PATTERN,
@@ -35,6 +37,7 @@ const workoutSchema = Type.Object(
       Type.Null(),
     ]),
     instructionsMarkdown: Type.String({
+      description: `Complete workout instructions ending with a non-empty "${REPORT_AFTERWARD_MARKER}" section containing the exact complete post-workout message. Its content is sent verbatim. An optional "${BEFORE_WORKOUT_MARKER}" section immediately before it is appended to the standard pre-workout reminder.`,
       minLength: 1,
       maxLength: MAX_WORKOUT_INSTRUCTIONS_LENGTH,
     }),
