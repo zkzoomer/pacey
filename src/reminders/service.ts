@@ -3,6 +3,7 @@ import type {
   OpenClawPluginServiceContext,
   PluginLogger,
 } from "openclaw/plugin-sdk/plugin-entry";
+import { isDeepStrictEqual } from "node:util";
 
 import type { PaceyDatabase } from "../database/index.js";
 import type { PlannedWorkout } from "../database/queries/planned-workouts.js";
@@ -20,13 +21,12 @@ const PRINT_REMINDER_SCRIPT = "process.stdout.write(process.argv[1])";
 
 type ReminderType = "pre_workout" | "post_workout";
 
-export type ReminderCronJob = {
+export type ReminderCronJob = Partial<ReminderCronUpdate> & {
   id: string;
   declarationKey?: string;
 };
 
-export type ReminderCronInput = {
-  declarationKey: string;
+export type ReminderCronUpdate = {
   name: string;
   description: string;
   enabled: true;
@@ -47,9 +47,14 @@ export type ReminderCronInput = {
   };
 };
 
+export type ReminderCronInput = ReminderCronUpdate & {
+  declarationKey: string;
+};
+
 export type ReminderCronService = {
   list: (options?: { includeDisabled?: boolean }) => Promise<ReminderCronJob[]>;
   add: (input: ReminderCronInput) => Promise<unknown>;
+  update: (id: string, patch: ReminderCronUpdate) => Promise<unknown>;
   remove: (id: string) => Promise<{ removed?: boolean }>;
 };
 
@@ -120,9 +125,6 @@ export async function reconcileReminderJobs(
   const reminders = database.plannedWorkouts
     .findForReminders(now.toISOString(), POST_WORKOUT_DELAY_MINUTES)
     .flatMap((workout) => remindersForWorkout(workout, now));
-  const desiredByKey = new Map(
-    reminders.map((reminder) => [reminder.input.declarationKey, reminder]),
-  );
 
   const existing = await cron.list({ includeDisabled: true });
   const managedByKey = Map.groupBy(
@@ -132,19 +134,36 @@ export async function reconcileReminderJobs(
     (job) => job.declarationKey as string,
   );
 
-  for (const [key, jobs] of managedByKey) {
-    const sortedJobs = jobs.toSorted((left, right) =>
-      left.id.localeCompare(right.id),
-    );
-    const obsoleteJobs = desiredByKey.has(key)
-      ? sortedJobs.slice(1)
-      : sortedJobs;
-    for (const job of obsoleteJobs) await cron.remove(job.id);
+  for (const reminder of reminders) {
+    const [existingJob, ...duplicates] = (
+      managedByKey.get(reminder.declarationKey) ?? []
+    ).toSorted((left, right) => left.id.localeCompare(right.id));
+    for (const duplicate of duplicates) await cron.remove(duplicate.id);
+
+    if (existingJob === undefined) {
+      await cron.add({
+        declarationKey: reminder.declarationKey,
+        ...reminder.job,
+      });
+    } else if (!reminderJobMatches(existingJob, reminder.job)) {
+      await cron.update(existingJob.id, reminder.job);
+    }
+    managedByKey.delete(reminder.declarationKey);
   }
 
-  for (const reminder of reminders) await cron.add(reminder.input);
+  for (const jobs of managedByKey.values())
+    for (const job of jobs) await cron.remove(job.id);
 
   return reminders.length;
+}
+
+function reminderJobMatches(
+  job: ReminderCronJob,
+  desired: ReminderCronUpdate,
+): boolean {
+  return Object.entries(desired).every(([key, value]) =>
+    isDeepStrictEqual(Reflect.get(job, key), value),
+  );
 }
 
 function getReminderCron(
@@ -156,8 +175,8 @@ function getReminderCron(
 }
 
 type DesiredReminder = {
-  type: ReminderType;
-  input: ReminderCronInput;
+  declarationKey: string;
+  job: ReminderCronUpdate;
 };
 
 function remindersForWorkout(
@@ -184,9 +203,8 @@ function remindersForWorkout(
   return reminders
     .filter((reminder) => reminder.atMs > now.getTime())
     .map((reminder) => ({
-      type: reminder.type,
-      input: {
-        declarationKey: `${DECLARATION_PREFIX}${workout.id}:${reminder.type}`,
+      declarationKey: `${DECLARATION_PREFIX}${workout.id}:${reminder.type}`,
+      job: {
         name: `Pacey ${reminder.type.replace("_", " ")} (${workout.id})`,
         description: "Pacey-managed workout reminder.",
         enabled: true,

@@ -8,6 +8,7 @@ import { createDatabase } from "../../database/index.js";
 import {
   type ReminderCronInput,
   type ReminderCronService,
+  type ReminderCronUpdate,
   reconcileReminderJobs,
 } from "../service.js";
 
@@ -77,7 +78,6 @@ test("reconciles workout reminders without duplicates", async () => {
       cron.jobs.map((job) => job.id),
       originalIds,
     );
-
     await cron.remove(originalIds[0]);
     await reconcileReminderJobs(database, cron, now);
     assert.equal(cron.jobs.length, 2);
@@ -97,7 +97,6 @@ test("reconciles workout reminders without duplicates", async () => {
       "2026-10-09T16:00:00.000Z",
       "2026-10-09T18:30:00.000Z",
     ]);
-
     await reconcileReminderJobs(
       database,
       cron,
@@ -127,16 +126,21 @@ class FakeCron implements ReminderCronService {
   }
 
   async add(input: ReminderCronInput): Promise<unknown> {
-    const existing = this.jobs.find(
-      (job) => job.declarationKey === input.declarationKey,
+    assert.equal(
+      this.jobs.some((job) => job.declarationKey === input.declarationKey),
+      false,
+      "add must not be used to update an existing cron job",
     );
-    if (existing !== undefined) {
-      Object.assign(existing, input);
-      return existing;
-    }
     const job = { id: `cron-${this.#nextId}`, ...input };
     this.#nextId += 1;
     this.jobs.push(job);
+    return job;
+  }
+
+  async update(id: string, patch: ReminderCronUpdate): Promise<unknown> {
+    const job = this.jobs.find((candidate) => candidate.id === id);
+    assert.ok(job, `cron job ${id} was not found`);
+    Object.assign(job, patch);
     return job;
   }
 
