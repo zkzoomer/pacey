@@ -37,7 +37,7 @@ test("reconciles workout reminders without duplicates", async () => {
     const cron = new FakeCron();
     const now = new Date("2026-10-06T10:00:00.000Z");
 
-    assert.equal(await reconcileReminderJobs(database, cron, now), 2);
+    assert.equal(await reconcileReminderJobs(database, cron, now), 4);
     assert.deepEqual(
       cron.jobs.map((job) => ({
         key: job.declarationKey,
@@ -52,6 +52,14 @@ test("reconciles workout reminders without duplicates", async () => {
           key: "pacey:reminder:swim-thursday:post_workout",
           at: "2026-10-08T11:30:00.000Z",
         },
+        {
+          key: "pacey:reminder:swim-thursday:post_workout_follow_up",
+          at: "2026-10-08T12:00:00.000Z",
+        },
+        {
+          key: "pacey:reminder:swim-thursday:post_workout_final",
+          at: "2026-10-08T13:00:00.000Z",
+        },
       ],
     );
     assert.deepEqual(
@@ -59,17 +67,21 @@ test("reconciles workout reminders without duplicates", async () => {
       [
         { mode: "announce", channel: "telegram", to: "telegram-user-1" },
         { mode: "announce", channel: "telegram", to: "telegram-user-1" },
+        { mode: "announce", channel: "telegram", to: "telegram-user-1" },
+        { mode: "announce", channel: "telegram", to: "telegram-user-1" },
       ],
     );
     assert.deepEqual(
       cron.jobs.map((job) => job.payload.kind),
-      ["command", "command"],
+      ["command", "command", "command", "command"],
     );
     assert.deepEqual(
       cron.jobs.map((job) => job.payload.argv[3]),
       [
         "🏊 Your swimming workout starts in about 60 minutes.\n\nUse /workout_today for the full session.\n\n**Before workout:** Bring fins for the technique set.",
         "🏊 How did the 5×200 m set go? Send each split, actual rest, and RPE.",
+        "Quick reminder to log today’s swimming workout when you have a moment.",
+        "Final reminder for today’s swimming workout. I’ll leave it unreported for now, but you can still tell me how it went later.",
       ],
     );
     const originalIds = cron.jobs.map((job) => job.id);
@@ -80,7 +92,7 @@ test("reconciles workout reminders without duplicates", async () => {
     );
     await cron.remove(originalIds[0]);
     await reconcileReminderJobs(database, cron, now);
-    assert.equal(cron.jobs.length, 2);
+    assert.equal(cron.jobs.length, 4);
 
     database.plannedWorkouts.reschedule(
       "telegram-user-1",
@@ -96,6 +108,8 @@ test("reconciles workout reminders without duplicates", async () => {
     assert.deepEqual(cron.jobs.map((job) => job.schedule.at).sort(), [
       "2026-10-09T16:00:00.000Z",
       "2026-10-09T18:30:00.000Z",
+      "2026-10-09T19:00:00.000Z",
+      "2026-10-09T20:00:00.000Z",
     ]);
     await reconcileReminderJobs(
       database,
@@ -104,11 +118,66 @@ test("reconciles workout reminders without duplicates", async () => {
     );
     assert.deepEqual(
       cron.jobs.map((job) => job.declarationKey),
-      ["pacey:reminder:swim-thursday:post_workout"],
+      [
+        "pacey:reminder:swim-thursday:post_workout",
+        "pacey:reminder:swim-thursday:post_workout_follow_up",
+        "pacey:reminder:swim-thursday:post_workout_final",
+      ],
     );
 
     database.plannedWorkouts.cancel("telegram-user-1", "swim-thursday");
     await reconcileReminderJobs(database, cron, now);
+    assert.deepEqual(cron.jobs, []);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("removes remaining reminders after a workout report", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "pacey-reminders-test-"));
+
+  try {
+    const database = createDatabase(directory);
+    database.initialize();
+    database.weekPlans.replace({
+      accountId: "telegram-user-1",
+      weekStart: "2026-10-05",
+      timezone: "Europe/Malta",
+      workouts: [
+        {
+          id: "swim-thursday",
+          sportId: "swimming",
+          scheduledAtUtc: "2026-10-08T10:00:00.000Z",
+          estimatedDurationMinutes: 60,
+          targetRpe: 6,
+          instructionsMarkdown: "Swim.\n\n**Report afterward:** How did it go?",
+        },
+      ],
+    });
+    const cron = new FakeCron();
+    const now = new Date("2026-10-08T11:45:00.000Z");
+
+    await reconcileReminderJobs(database, cron, now);
+    assert.deepEqual(
+      cron.jobs.map((job) => job.declarationKey),
+      [
+        "pacey:reminder:swim-thursday:post_workout_follow_up",
+        "pacey:reminder:swim-thursday:post_workout_final",
+      ],
+    );
+
+    database.workoutReports.record({
+      accountId: "telegram-user-1",
+      plannedWorkoutId: "swim-thursday",
+      originalMessage: "Completed it as planned.",
+      completionStatus: "completed",
+      durationMinutes: null,
+      perceivedRpe: null,
+      sportId: "swimming",
+      sportMetricsJson: null,
+    });
+    await reconcileReminderJobs(database, cron, now);
+
     assert.deepEqual(cron.jobs, []);
   } finally {
     rmSync(directory, { recursive: true, force: true });

@@ -15,11 +15,15 @@ import { findSupportedSport } from "../sports/index.js";
 
 const RECONCILIATION_INTERVAL_MS = 10 * 60_000;
 const PRE_WORKOUT_MINUTES = 60;
-const POST_WORKOUT_DELAY_MINUTES = 30;
+const POST_WORKOUT_MINUTES = { initial: 30, followUp: 90, final: 150 } as const;
 const DECLARATION_PREFIX = "pacey:reminder:";
 const PRINT_REMINDER_SCRIPT = "process.stdout.write(process.argv[1])";
 
-type ReminderType = "pre_workout" | "post_workout";
+type ReminderType =
+  | "pre_workout"
+  | "post_workout"
+  | "post_workout_follow_up"
+  | "post_workout_final";
 
 export type ReminderCronJob = Partial<ReminderCronUpdate> & {
   id: string;
@@ -123,7 +127,7 @@ export async function reconcileReminderJobs(
   now = new Date(),
 ): Promise<number> {
   const reminders = database.plannedWorkouts
-    .findForReminders(now.toISOString(), POST_WORKOUT_DELAY_MINUTES)
+    .findForReminders(now.toISOString(), POST_WORKOUT_MINUTES.final)
     .flatMap((workout) => remindersForWorkout(workout, now));
 
   const existing = await cron.list({ includeDisabled: true });
@@ -194,9 +198,25 @@ function remindersForWorkout(
       type: "post_workout",
       atMs:
         startMs +
-        (workout.estimatedDurationMinutes + POST_WORKOUT_DELAY_MINUTES) *
+        (workout.estimatedDurationMinutes + POST_WORKOUT_MINUTES.initial) *
           60_000,
       text: postWorkoutText(workout),
+    },
+    {
+      type: "post_workout_follow_up",
+      atMs:
+        startMs +
+        (workout.estimatedDurationMinutes + POST_WORKOUT_MINUTES.followUp) *
+          60_000,
+      text: postWorkoutFollowUpText(workout),
+    },
+    {
+      type: "post_workout_final",
+      atMs:
+        startMs +
+        (workout.estimatedDurationMinutes + POST_WORKOUT_MINUTES.final) *
+          60_000,
+      text: finalPostWorkoutText(workout),
     },
   ];
 
@@ -245,5 +265,20 @@ function postWorkoutText(workout: PlannedWorkout): string {
   return (
     extractReportPrompt(workout.instructionsMarkdown) ??
     `${emoji} How did your ${label} workout go? Tell me what you completed, how long it took, and your RPE.`
+  );
+}
+
+function postWorkoutFollowUpText(workout: PlannedWorkout): string {
+  return `Quick reminder to log today’s ${sportLabel(workout)} workout when you have a moment.`;
+}
+
+function finalPostWorkoutText(workout: PlannedWorkout): string {
+  return `Final reminder for today’s ${sportLabel(workout)} workout. I’ll leave it unreported for now, but you can still tell me how it went later.`;
+}
+
+function sportLabel(workout: PlannedWorkout): string {
+  return (
+    findSupportedSport(workout.sportId)?.name.toLocaleLowerCase() ??
+    workout.sportId
   );
 }

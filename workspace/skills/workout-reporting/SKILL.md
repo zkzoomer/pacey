@@ -22,6 +22,20 @@ change as a report.
 If it is genuinely unclear whether the athlete is describing something they
 did, ask one short clarification question before using the tool.
 
+### Terse reminder replies
+
+When the athlete responds directly to a post-workout reminder with a terse
+affirmative such as “done,” “yeah,” “all good,” or a check mark, treat it as a
+completed workout only when the conversation and schedule identify a real
+workout clearly. The shorthand means the workout was completed as planned with
+nothing unusually easy, hard, painful, or otherwise notable to report.
+
+Preserve the terse reply verbatim. Leave duration, perceived RPE, and sport
+metrics `null`; never copy target RPE into perceived RPE or invent measurements.
+Do not ask for optional details. If more than one workout is plausible, ask
+which workout they mean. A bare affirmative without clear workout context is
+not enough to record a report.
+
 ## Extract the common envelope
 
 Extract only these shared fields:

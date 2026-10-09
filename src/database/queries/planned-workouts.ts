@@ -21,7 +21,7 @@ export type PlannedWorkoutQueries = {
   ) => PlannedWorkout[];
   findForReminders: (
     nowUtc: string,
-    postWorkoutDelayMinutes: number,
+    finalPostWorkoutDelayMinutes: number,
   ) => PlannedWorkout[];
   getTrainingState: (
     accountId: string,
@@ -102,7 +102,7 @@ export function createPlannedWorkoutQueries(
           .map((row) => toPlannedWorkout(row as PlannedWorkoutRow)),
       );
     },
-    findForReminders(nowUtc, postWorkoutDelayMinutes) {
+    findForReminders(nowUtc, finalPostWorkoutDelayMinutes) {
       return withDatabase(databasePath, (database) =>
         database
           .prepare(
@@ -133,7 +133,7 @@ export function createPlannedWorkoutQueries(
               ORDER BY planned_workouts.scheduled_at_utc, planned_workouts.id
             `,
           )
-          .all(postWorkoutDelayMinutes, nowUtc)
+          .all(finalPostWorkoutDelayMinutes, nowUtc)
           .map((row) => toPlannedWorkout(row as PlannedWorkoutRow)),
       );
     },
