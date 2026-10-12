@@ -25,7 +25,7 @@ did, ask one short clarification question before using the tool.
 ### Terse reminder replies
 
 When the athlete responds directly to a post-workout reminder with a terse
-affirmative such as “done,” “yeah,” “all good,” or a check mark, treat it as a
+affirmative such as “done,” “yeah,” “all good,” etc, treat it as a
 completed workout only when the conversation and schedule identify a real
 workout clearly. The shorthand means the workout was completed as planned with
 nothing unusually easy, hard, painful, or otherwise notable to report.
