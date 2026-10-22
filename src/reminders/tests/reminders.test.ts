@@ -54,11 +54,11 @@ test("reconciles workout reminders without duplicates", async () => {
         },
         {
           key: "pacey:reminder:swim-thursday:post_workout_follow_up",
-          at: "2026-10-08T12:00:00.000Z",
+          at: "2026-10-08T12:30:00.000Z",
         },
         {
           key: "pacey:reminder:swim-thursday:post_workout_final",
-          at: "2026-10-08T13:00:00.000Z",
+          at: "2026-10-08T13:30:00.000Z",
         },
       ],
     );
@@ -108,8 +108,8 @@ test("reconciles workout reminders without duplicates", async () => {
     assert.deepEqual(cron.jobs.map((job) => job.schedule.at).sort(), [
       "2026-10-09T16:00:00.000Z",
       "2026-10-09T18:30:00.000Z",
-      "2026-10-09T19:00:00.000Z",
-      "2026-10-09T20:00:00.000Z",
+      "2026-10-09T19:30:00.000Z",
+      "2026-10-09T20:30:00.000Z",
     ]);
     await reconcileReminderJobs(
       database,
